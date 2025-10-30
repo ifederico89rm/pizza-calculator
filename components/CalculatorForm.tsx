@@ -1,0 +1,185 @@
+import React from 'react';
+import type { CalculationParams, PizzaStyle, DoughMethod, PrebuiltRecipe } from '../types';
+import { Card } from './Card';
+import { SliderInput } from './SliderInput';
+import { Tabs } from './Tabs';
+
+interface CalculatorFormProps {
+  params: CalculationParams;
+  onParamChange: <K extends keyof CalculationParams>(param: K, value: CalculationParams[K]) => void;
+  onStyleChange: (style: PizzaStyle) => void;
+  onMethodChange: (method: DoughMethod) => void;
+  pizzaStyles: PizzaStyle[];
+  doughMethods: DoughMethod[];
+  recipes: Record<PizzaStyle, PrebuiltRecipe[]>;
+  selectedRecipe: PrebuiltRecipe | null;
+  onRecipeSelect: (recipe: PrebuiltRecipe) => void;
+}
+
+const icons = {
+  hydration: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-500 rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2C6.66 2 4 4.8 4 8.13 4 12.42 10 18 10 18s6-5.58 6-9.87C16 4.8 13.34 2 10 2z" /></svg>,
+  salt: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-500" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v1h-2V4H7v1H5V4zM5 7h10v9a2 2 0 01-2 2H7a2 2 0 01-2-2V7z" /><circle cx="8" cy="11" r="1" /><circle cx="12" cy="11" r="1" /><circle cx="10" cy="14" r="1" /></svg>,
+  freshYeast: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 12.5a3.5 3.5 0 117 0 3.5 3.5 0 01-7 0z" /><path fillRule="evenodd" d="M2 5a3 3 0 013-3h10a3 3 0 013 3v5a3 3 0 01-3 3H5a3 3 0 01-3-3V5zm3-1a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z" clipRule="evenodd" /></svg>,
+  malt: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-700" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 6a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM3 9a1 1 0 000 2h14a1 1 0 100-2H3zM2 13a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1z" /></svg>,
+  oliveOil: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-lime-600" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM4.332 10.155a5.964 5.964 0 013.522-3.522.5.5 0 01.66.66 4.964 4.964 0 00-2.936 2.936.5.5 0 01-.66-.66z" clipRule="evenodd" /></svg>,
+}
+
+const SectionHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">{children}</h3>
+);
+
+const NumberInput: React.FC<{
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  step?: number;
+  min?: number;
+}> = ({ label, value, onChange, step = 1, min = 1 }) => {
+  const handleIncrement = () => onChange(value + step);
+  const handleDecrement = () => {
+    const newValue = value - step;
+    onChange(newValue >= min ? newValue : min);
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numValue = parseInt(e.target.value, 10);
+    if (!isNaN(numValue)) {
+      onChange(numValue);
+    } else {
+      onChange(min);
+    }
+  };
+
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const numValue = parseInt(e.target.value, 10);
+    if (isNaN(numValue) || numValue < min) {
+      onChange(min);
+    }
+  }
+
+  return (
+    <div className="flex flex-col">
+      <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={handleDecrement}
+          aria-label={`Decrease ${label}`}
+          className="px-4 h-11 flex items-center justify-center border border-r-0 border-gray-300 rounded-l-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#D94F2B] focus:outline-none z-10"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" /></svg>
+        </button>
+        <input
+          type="number"
+          value={value}
+          onChange={handleInputChange}
+          onBlur={onBlur}
+          step={step}
+          min={min}
+          className="w-full px-2 h-11 text-center border-y border-gray-300 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-[#D94F2B] focus:border-[#D94F2B] focus:outline-none z-0 appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <button
+          type="button"
+          onClick={handleIncrement}
+          aria-label={`Increase ${label}`}
+          className="px-4 h-11 flex items-center justify-center border border-l-0 border-gray-300 rounded-r-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#D94F2B] focus:outline-none z-10"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export const CalculatorForm: React.FC<CalculatorFormProps> = ({
+  params,
+  onParamChange,
+  onStyleChange,
+  onMethodChange,
+  pizzaStyles,
+  doughMethods,
+  recipes,
+  selectedRecipe,
+  onRecipeSelect,
+}) => {
+  const recipesForStyle = recipes[params.pizzaStyle] || [];
+
+  return (
+    <Card>
+      <div className="space-y-8">
+        <div>
+          <SectionHeader>Pizza Style</SectionHeader>
+          <Tabs options={pizzaStyles} selected={params.pizzaStyle} onSelect={(opt) => onStyleChange(opt as PizzaStyle)} />
+        </div>
+
+        {recipesForStyle.length > 0 && (
+           <div>
+              <SectionHeader>Pre-built Recipes</SectionHeader>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {recipesForStyle.map(recipe => (
+                  <button
+                    key={recipe.name}
+                    type="button"
+                    onClick={() => onRecipeSelect(recipe)}
+                    className={`text-left p-3 rounded-lg border-2 transition-all duration-200 ${
+                      selectedRecipe?.name === recipe.name
+                        ? 'border-[#D94F2B] bg-[#D94F2B]/10 dark:bg-[#D94F2B]/20'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-[#D94F2B]/50 dark:hover:border-[#D94F2B] bg-slate-50 dark:bg-slate-800/50'
+                    }`}
+                  >
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">{recipe.name}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{recipe.description}</p>
+                  </button>
+                ))}
+              </div>
+           </div>
+        )}
+        
+        <div>
+          <SectionHeader>Dough Method</SectionHeader>
+          <Tabs options={doughMethods} selected={params.doughMethod} onSelect={(opt) => onMethodChange(opt as DoughMethod)} />
+        </div>
+
+        <div>
+          <SectionHeader>Quantity</SectionHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <NumberInput label="Number of Dough Balls" value={params.ballCount} onChange={(v) => onParamChange('ballCount', v)} min={1} />
+            <NumberInput label="Weight per Ball (g)" value={params.ballWeight} onChange={(v) => onParamChange('ballWeight', v)} step={10} min={10} />
+          </div>
+        </div>
+
+        <div>
+          <SectionHeader>Dough Parameters</SectionHeader>
+          <div className="space-y-4">
+              <SliderInput icon={icons.hydration} label="Hydration" value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
+              <SliderInput icon={icons.salt} label="Salt" value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
+              <SliderInput icon={icons.freshYeast} label="Fresh Yeast" value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={3} step={0.1} unit="%" />
+              <SliderInput icon={icons.malt} label="Malt" value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={5} step={0.1} unit="%" />
+              <SliderInput icon={icons.oliveOil} label="Olive Oil" value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={10} step={0.1} unit="%" />
+          </div>
+        </div>
+
+        {params.doughMethod === 'Biga' && (
+          <div>
+            <SectionHeader>Biga Parameters</SectionHeader>
+            <div className="space-y-4">
+                <SliderInput label="Biga Percentage" value={params.bigaPercentage} onChange={(v) => onParamChange('bigaPercentage', v)} min={10} max={100} unit="%" />
+                <SliderInput label="Biga Hydration" value={params.bigaHydration} onChange={(v) => onParamChange('bigaHydration', v)} min={40} max={60} unit="%" />
+                <SliderInput label="Biga Fresh Yeast" value={params.bigaFreshYeast} onChange={(v) => onParamChange('bigaFreshYeast', v)} min={0} max={1} step={0.01} unit="%" />
+            </div>
+          </div>
+        )}
+
+        {params.doughMethod === 'Poolish' && (
+          <div>
+            <SectionHeader>Poolish Parameters</SectionHeader>
+            <div className="space-y-4">
+                <SliderInput label="Poolish Percentage" value={params.poolishPercentage} onChange={(v) => onParamChange('poolishPercentage', v)} min={10} max={50} unit="%" />
+                <SliderInput label="Maturation Hours" value={params.poolishHours} onChange={(v) => onParamChange('poolishHours', v)} min={1} max={18} unit="h" />
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};
