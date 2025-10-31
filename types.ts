@@ -1,8 +1,7 @@
-// FIX: This self-import causes declaration conflicts with types defined in this file.
-// import type { PizzaStyle, DoughMethod } from './types';
-
 export type PizzaStyle = 'Napoletana' | 'Romana' | 'Teglia' | 'Focaccia';
-export type DoughMethod = 'Diretto' | 'Biga' | 'Poolish';
+export type DoughMethod = 'Direct' | 'Biga' | 'Poolish';
+export type TegliaShape = 'square' | 'round';
+export type TegliaThickness = 'very thin' | 'thin' | 'normal' | 'thick' | 'very thick';
 
 export interface CalculationParams {
   pizzaStyle: PizzaStyle;
@@ -23,6 +22,13 @@ export interface CalculationParams {
   // Poolish specific
   poolishPercentage: number;
   poolishHours: number;
+
+  // Teglia specific
+  tegliaShape: TegliaShape;
+  tegliaDiameter: number;
+  tegliaLength: number;
+  tegliaWidth: number;
+  tegliaThickness: TegliaThickness;
 }
 
 export interface IngredientSet {
@@ -61,4 +67,10 @@ export interface PrebuiltRecipe {
     poolishPercentage?: number;
     poolishHours?: number;
   };
+  // Detailed instructions
+  wFlourPreferment?: string;
+  wFlourFinalDough: string;
+  bulkFermentation: string;
+  proofing: string;
+  baking: string;
 }

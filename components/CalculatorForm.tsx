@@ -1,8 +1,12 @@
-import React from 'react';
-import type { CalculationParams, PizzaStyle, DoughMethod, PrebuiltRecipe } from '../types';
+import React, { useState, useEffect } from 'react';
+import type { CalculationParams, PizzaStyle, DoughMethod, PrebuiltRecipe, TegliaShape, TegliaThickness } from '../types';
 import { Card } from './Card';
 import { SliderInput } from './SliderInput';
+import { StepSlider } from './StepSlider';
 import { Tabs } from './Tabs';
+import { TEGLIA_SHAPES, TEGLIA_THICKNESS_LEVELS, TEGLIA_THICKNESS_MAP } from '../constants';
+import { RecipeDetailModal } from './RecipeDetailModal';
+
 
 interface CalculatorFormProps {
   params: CalculationParams;
@@ -45,6 +49,8 @@ const NumberInput: React.FC<{
     const numValue = parseInt(e.target.value, 10);
     if (!isNaN(numValue)) {
       onChange(numValue);
+    } else if (e.target.value === '') {
+      // Allow clearing the input
     } else {
       onChange(min);
     }
@@ -102,84 +108,179 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   selectedRecipe,
   onRecipeSelect,
 }) => {
+  const [showAllRecipes, setShowAllRecipes] = useState(false);
+  const [detailedRecipe, setDetailedRecipe] = useState<PrebuiltRecipe | null>(null);
   const recipesForStyle = recipes[params.pizzaStyle] || [];
+  
+  const { pizzaStyle, tegliaShape, tegliaDiameter, tegliaLength, tegliaWidth, tegliaThickness } = params;
+
+  useEffect(() => {
+    // When pizza style changes, collapse the recipe list
+    setShowAllRecipes(false);
+  }, [pizzaStyle]);
+
+  // Effect to auto-calculate ball weight for Teglia pizza
+  useEffect(() => {
+    if (pizzaStyle !== 'Teglia') return;
+
+    const thicknessMultiplier = TEGLIA_THICKNESS_MAP[tegliaThickness];
+    let area = 0;
+
+    if (tegliaShape === 'round') {
+        const radius = tegliaDiameter / 2;
+        area = Math.PI * radius * radius;
+    } else { // square
+        area = tegliaLength * tegliaWidth;
+    }
+
+    const baseWeight = area / 2; // Dough weight calculation factor
+    const newWeight = Math.round(baseWeight * thicknessMultiplier);
+
+    if (newWeight > 0) {
+        onParamChange('ballWeight', newWeight);
+    }
+  }, [pizzaStyle, tegliaShape, tegliaDiameter, tegliaLength, tegliaWidth, tegliaThickness, onParamChange]);
+
+
+  const displayedRecipes = showAllRecipes ? recipesForStyle : recipesForStyle.slice(0, 2);
 
   return (
-    <Card>
-      <div className="space-y-8">
-        <div>
-          <SectionHeader>Pizza Style</SectionHeader>
-          <Tabs options={pizzaStyles} selected={params.pizzaStyle} onSelect={(opt) => onStyleChange(opt as PizzaStyle)} />
-        </div>
+    <>
+      <Card>
+        <div className="space-y-8">
+          <div>
+            <SectionHeader>Pizza Style</SectionHeader>
+            <Tabs options={pizzaStyles} selected={params.pizzaStyle} onSelect={(opt) => onStyleChange(opt as PizzaStyle)} />
+          </div>
 
-        {recipesForStyle.length > 0 && (
-           <div>
-              <SectionHeader>Pre-built Recipes</SectionHeader>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {recipesForStyle.map(recipe => (
-                  <button
-                    key={recipe.name}
-                    type="button"
-                    onClick={() => onRecipeSelect(recipe)}
-                    className={`text-left p-3 rounded-lg border-2 transition-all duration-200 ${
-                      selectedRecipe?.name === recipe.name
-                        ? 'border-[#D94F2B] bg-[#D94F2B]/10 dark:bg-[#D94F2B]/20'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-[#D94F2B]/50 dark:hover:border-[#D94F2B] bg-slate-50 dark:bg-slate-800/50'
-                    }`}
-                  >
-                    <p className="font-semibold text-gray-800 dark:text-gray-200">{recipe.name}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{recipe.description}</p>
-                  </button>
-                ))}
+          {recipesForStyle.length > 0 && (
+            <div>
+                <SectionHeader>Pre-built Recipes</SectionHeader>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {displayedRecipes.map(recipe => (
+                    <div key={recipe.name} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => onRecipeSelect(recipe)}
+                        className={`w-full h-full text-left p-3 pr-10 rounded-lg border-2 transition-all duration-200 ${
+                          selectedRecipe?.name === recipe.name
+                            ? 'border-[#D94F2B] bg-[#D94F2B]/10 dark:bg-[#D94F2B]/20'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-[#D94F2B]/50 dark:hover:border-[#D94F2B] bg-slate-50 dark:bg-slate-800/50'
+                        }`}
+                      >
+                        <p className="font-semibold text-gray-800 dark:text-gray-200">{recipe.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{recipe.description}</p>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`View details for ${recipe.name}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDetailedRecipe(recipe);
+                        }}
+                        className="absolute top-3 right-3 p-1 rounded-full text-gray-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#D94F2B]"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {recipesForStyle.length > 2 && (
+                  <div className="mt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowAllRecipes(prev => !prev)}
+                      className="text-sm font-semibold text-[#D94F2B] hover:text-[#c04524] dark:hover:text-orange-400 focus:outline-none focus:underline"
+                    >
+                      {showAllRecipes ? 'Show Less' : `Show ${recipesForStyle.length - 2} more...`}
+                    </button>
+                  </div>
+                )}
+            </div>
+          )}
+          
+          <div>
+            <SectionHeader>Dough Method</SectionHeader>
+            <Tabs options={doughMethods} selected={params.doughMethod} onSelect={(opt) => onMethodChange(opt as DoughMethod)} />
+          </div>
+
+          <div>
+            <SectionHeader>Quantity</SectionHeader>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <NumberInput label="Number of Dough Balls" value={params.ballCount} onChange={(v) => onParamChange('ballCount', v)} min={1} />
+            </div>
+
+            {params.pizzaStyle === 'Teglia' && (
+              <div className="mt-6 space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200">Tray Size &amp; Thickness</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 -mt-2">Define your tray size to automatically calculate the required dough weight.</p>
+                  
+                  <Tabs options={TEGLIA_SHAPES} selected={params.tegliaShape} onSelect={(v) => onParamChange('tegliaShape', v as TegliaShape)} />
+
+                  {params.tegliaShape === 'square' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <NumberInput label="Length (cm)" value={params.tegliaLength} onChange={(v) => onParamChange('tegliaLength', v)} min={10} />
+                      <NumberInput label="Width (cm)" value={params.tegliaWidth} onChange={(v) => onParamChange('tegliaWidth', v)} min={10} />
+                    </div>
+                  ) : (
+                    <NumberInput label="Diameter (cm)" value={params.tegliaDiameter} onChange={(v) => onParamChange('tegliaDiameter', v)} min={10} />
+                  )}
+
+                  <StepSlider 
+                    label="Thickness"
+                    options={TEGLIA_THICKNESS_LEVELS}
+                    value={params.tegliaThickness}
+                    onChange={(v) => onParamChange('tegliaThickness', v as TegliaThickness)}
+                  />
               </div>
-           </div>
-        )}
-        
-        <div>
-          <SectionHeader>Dough Method</SectionHeader>
-          <Tabs options={doughMethods} selected={params.doughMethod} onSelect={(opt) => onMethodChange(opt as DoughMethod)} />
-        </div>
-
-        <div>
-          <SectionHeader>Quantity</SectionHeader>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <NumberInput label="Number of Dough Balls" value={params.ballCount} onChange={(v) => onParamChange('ballCount', v)} min={1} />
-            <NumberInput label="Weight per Ball (g)" value={params.ballWeight} onChange={(v) => onParamChange('ballWeight', v)} step={10} min={10} />
-          </div>
-        </div>
-
-        <div>
-          <SectionHeader>Dough Parameters</SectionHeader>
-          <div className="space-y-4">
-              <SliderInput icon={icons.hydration} label="Hydration" value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
-              <SliderInput icon={icons.salt} label="Salt" value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
-              <SliderInput icon={icons.freshYeast} label="Fresh Yeast" value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={3} step={0.1} unit="%" />
-              <SliderInput icon={icons.malt} label="Malt" value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={5} step={0.1} unit="%" />
-              <SliderInput icon={icons.oliveOil} label="Olive Oil" value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={10} step={0.1} unit="%" />
-          </div>
-        </div>
-
-        {params.doughMethod === 'Biga' && (
-          <div>
-            <SectionHeader>Biga Parameters</SectionHeader>
-            <div className="space-y-4">
-                <SliderInput label="Biga Percentage" value={params.bigaPercentage} onChange={(v) => onParamChange('bigaPercentage', v)} min={10} max={100} unit="%" />
-                <SliderInput label="Biga Hydration" value={params.bigaHydration} onChange={(v) => onParamChange('bigaHydration', v)} min={40} max={60} unit="%" />
-                <SliderInput label="Biga Fresh Yeast" value={params.bigaFreshYeast} onChange={(v) => onParamChange('bigaFreshYeast', v)} min={0} max={1} step={0.01} unit="%" />
+            )}
+            <div className="mt-4">
+              <NumberInput label="Weight per Ball (gr)" value={params.ballWeight} onChange={(v) => onParamChange('ballWeight', v)} step={10} min={10} />
             </div>
           </div>
-        )}
 
-        {params.doughMethod === 'Poolish' && (
           <div>
-            <SectionHeader>Poolish Parameters</SectionHeader>
+            <SectionHeader>Dough Parameters</SectionHeader>
             <div className="space-y-4">
-                <SliderInput label="Poolish Percentage" value={params.poolishPercentage} onChange={(v) => onParamChange('poolishPercentage', v)} min={10} max={50} unit="%" />
-                <SliderInput label="Maturation Hours" value={params.poolishHours} onChange={(v) => onParamChange('poolishHours', v)} min={1} max={18} unit="h" />
+                <SliderInput icon={icons.hydration} label="Hydration" value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
+                <SliderInput icon={icons.salt} label="Salt" value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
+                <SliderInput icon={icons.freshYeast} label="Fresh Yeast" value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={3} step={0.1} unit="%" />
+                <SliderInput icon={icons.malt} label="Malt" value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={5} step={0.1} unit="%" />
+                <SliderInput icon={icons.oliveOil} label="Olive Oil" value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={10} step={0.1} unit="%" />
             </div>
           </div>
-        )}
-      </div>
-    </Card>
+
+          {params.doughMethod === 'Biga' && (
+            <div>
+              <SectionHeader>Biga Parameters</SectionHeader>
+              <div className="space-y-4">
+                  <SliderInput label="Biga Percentage" value={params.bigaPercentage} onChange={(v) => onParamChange('bigaPercentage', v)} min={10} max={100} unit="%" />
+                  <SliderInput label="Biga Hydration" value={params.bigaHydration} onChange={(v) => onParamChange('bigaHydration', v)} min={40} max={60} unit="%" />
+                  <SliderInput label="Biga Fresh Yeast" value={params.bigaFreshYeast} onChange={(v) => onParamChange('bigaFreshYeast', v)} min={0} max={1} step={0.01} unit="%" />
+              </div>
+            </div>
+          )}
+
+          {params.doughMethod === 'Poolish' && (
+            <div>
+              <SectionHeader>Poolish Parameters</SectionHeader>
+              <div className="space-y-4">
+                  <SliderInput label="Poolish Percentage" value={params.poolishPercentage} onChange={(v) => onParamChange('poolishPercentage', v)} min={10} max={50} unit="%" />
+                  <SliderInput label="Maturation Hours" value={params.poolishHours} onChange={(v) => onParamChange('poolishHours', v)} min={1} max={18} unit="h" />
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {detailedRecipe && (
+        <RecipeDetailModal
+          recipe={detailedRecipe}
+          onClose={() => setDetailedRecipe(null)}
+        />
+      )}
+    </>
   );
 };

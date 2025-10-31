@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { CalculatorForm } from './components/CalculatorForm';
@@ -20,7 +21,7 @@ const App: React.FC = () => {
 
   const handleStyleChange = useCallback((style: PizzaStyle) => {
     setSelectedRecipe(null);
-    setParams(prev => ({...prev, ...DEFAULT_PARAMS, pizzaStyle: style}));
+    setParams(prev => ({...DEFAULT_PARAMS, pizzaStyle: style, ballCount: prev.ballCount}));
   }, []);
 
   const handleMethodChange = useCallback((method: DoughMethod) => {

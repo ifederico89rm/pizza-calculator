@@ -31,7 +31,7 @@ export const calculateDough = (params: CalculationParams): CalculationResult => 
       return calculateBiga(params, totalFlour, totalDoughWeight, oilPercent);
     case 'Poolish':
       return calculatePoolish(params, totalFlour, totalDoughWeight, oilPercent);
-    case 'Diretto':
+    case 'Direct':
     default:
       return calculateDirect(params, totalFlour, totalDoughWeight, oilPercent);
   }

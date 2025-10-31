@@ -1,6 +1,5 @@
-
 {
   "name": "Pizza Ingredient Calculator",
-  "description": "An interactive calculator for professional and amateur pizza makers to generate dough recipes for various pizza styles. It supports direct, biga, and poolish methods with dynamic ingredient calculations."
+  "description": "An interactive calculator for professional and amateur pizza makers to generate dough recipes for various pizza styles. It supports direct, biga, and poolish methods with dynamic ingredient calculations.",
+  "requestFramePermissions": []
 }
-   

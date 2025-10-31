@@ -1,11 +1,21 @@
-import type { CalculationParams, PizzaStyle, DoughMethod } from './types';
+import type { CalculationParams, PizzaStyle, DoughMethod, TegliaShape, TegliaThickness } from './types';
 
 export const PIZZA_STYLES: PizzaStyle[] = ['Napoletana', 'Romana', 'Teglia', 'Focaccia'];
-export const DOUGH_METHODS: DoughMethod[] = ['Diretto', 'Biga', 'Poolish'];
+export const DOUGH_METHODS: DoughMethod[] = ['Direct', 'Biga', 'Poolish'];
+
+export const TEGLIA_SHAPES: TegliaShape[] = ['square', 'round'];
+export const TEGLIA_THICKNESS_LEVELS: readonly TegliaThickness[] = ['very thin', 'thin', 'normal', 'thick', 'very thick'];
+export const TEGLIA_THICKNESS_MAP: { [key in TegliaThickness]: number } = {
+  'very thin': 0.70,
+  'thin': 0.85,
+  'normal': 1.00,
+  'thick': 1.10,
+  'very thick': 1.20,
+};
 
 export const DEFAULT_PARAMS: CalculationParams = {
   pizzaStyle: 'Napoletana',
-  doughMethod: 'Diretto',
+  doughMethod: 'Direct',
   ballCount: 4,
   ballWeight: 250,
   hydration: 65,
@@ -20,6 +30,12 @@ export const DEFAULT_PARAMS: CalculationParams = {
 
   poolishPercentage: 30,
   poolishHours: 8,
+
+  tegliaShape: 'square',
+  tegliaDiameter: 32,
+  tegliaLength: 40,
+  tegliaWidth: 30,
+  tegliaThickness: 'normal',
 };
 
 // Mapping from poolish maturation hours to fresh yeast percentage
