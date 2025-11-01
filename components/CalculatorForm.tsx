@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { CalculationParams, PizzaStyle, DoughMethod, PrebuiltRecipe, TegliaShape, TegliaThickness } from '../types';
+import type { CalculationParams, PizzaStyle, DoughMethod, PrebuiltRecipe, TegliaShape, TegliaThickness, CustomRecipe } from '../types';
 import { Card } from './Card';
 import { SliderInput } from './SliderInput';
 import { StepSlider } from './StepSlider';
@@ -16,8 +16,10 @@ interface CalculatorFormProps {
   pizzaStyles: PizzaStyle[];
   doughMethods: DoughMethod[];
   recipes: Record<PizzaStyle, PrebuiltRecipe[]>;
-  selectedRecipe: PrebuiltRecipe | null;
-  onRecipeSelect: (recipe: PrebuiltRecipe) => void;
+  customRecipes: CustomRecipe[];
+  selectedRecipeIdentifier: string | null;
+  onRecipeSelect: (recipe: PrebuiltRecipe | CustomRecipe) => void;
+  onDeleteCustomRecipe: (id: string) => void;
 }
 
 const icons = {
@@ -105,32 +107,52 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   pizzaStyles,
   doughMethods,
   recipes,
-  selectedRecipe,
+  customRecipes,
+  selectedRecipeIdentifier,
   onRecipeSelect,
+  onDeleteCustomRecipe,
 }) => {
   const [showAllRecipes, setShowAllRecipes] = useState(false);
   const [detailedRecipe, setDetailedRecipe] = useState<PrebuiltRecipe | null>(null);
-  const recipesForStyle = recipes[params.pizzaStyle] || [];
+  const [activeRecipeTab, setActiveRecipeTab] = useState<'pre-built' | 'my-recipes'>('pre-built');
   
-  const { pizzaStyle, tegliaShape, tegliaDiameter, tegliaLength, tegliaWidth, tegliaThickness } = params;
+  const { 
+    pizzaStyle, 
+    tegliaShape, tegliaDiameter, tegliaLength, tegliaWidth, tegliaThickness,
+    focacciaShape, focacciaDiameter, focacciaLength, focacciaWidth, focacciaThickness 
+  } = params;
+  
+  const recipesForStyle = recipes[pizzaStyle] || [];
+  const customRecipesForStyle = customRecipes.filter(r => r.pizzaStyle === pizzaStyle);
+
+  const isTeglia = pizzaStyle === 'Teglia';
+  const isFocaccia = pizzaStyle === 'Focaccia';
+  const showTrayControls = isTeglia || isFocaccia;
 
   useEffect(() => {
-    // When pizza style changes, collapse the recipe list
+    // When pizza style changes, collapse the recipe list and switch to pre-built
     setShowAllRecipes(false);
+    setActiveRecipeTab('pre-built');
   }, [pizzaStyle]);
 
-  // Effect to auto-calculate ball weight for Teglia pizza
+  // Effect to auto-calculate ball weight for Teglia or Focaccia pizza
   useEffect(() => {
-    if (pizzaStyle !== 'Teglia') return;
+    if (!showTrayControls) return;
 
-    const thicknessMultiplier = TEGLIA_THICKNESS_MAP[tegliaThickness];
+    const shape = isTeglia ? tegliaShape : focacciaShape;
+    const diameter = isTeglia ? tegliaDiameter : focacciaDiameter;
+    const length = isTeglia ? tegliaLength : focacciaLength;
+    const width = isTeglia ? tegliaWidth : focacciaWidth;
+    const thickness = isTeglia ? tegliaThickness : focacciaThickness;
+    
+    const thicknessMultiplier = TEGLIA_THICKNESS_MAP[thickness];
     let area = 0;
 
-    if (tegliaShape === 'round') {
-        const radius = tegliaDiameter / 2;
+    if (shape === 'round') {
+        const radius = diameter / 2;
         area = Math.PI * radius * radius;
     } else { // square
-        area = tegliaLength * tegliaWidth;
+        area = length * width;
     }
 
     const baseWeight = area / 2; // Dough weight calculation factor
@@ -139,8 +161,12 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
     if (newWeight > 0) {
         onParamChange('ballWeight', newWeight);
     }
-  }, [pizzaStyle, tegliaShape, tegliaDiameter, tegliaLength, tegliaWidth, tegliaThickness, onParamChange]);
-
+  }, [
+    pizzaStyle, 
+    tegliaShape, tegliaDiameter, tegliaLength, tegliaWidth, tegliaThickness, 
+    focacciaShape, focacciaDiameter, focacciaLength, focacciaWidth, focacciaThickness,
+    onParamChange
+  ]);
 
   const displayedRecipes = showAllRecipes ? recipesForStyle : recipesForStyle.slice(0, 2);
 
@@ -153,51 +179,98 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
             <Tabs options={pizzaStyles} selected={params.pizzaStyle} onSelect={(opt) => onStyleChange(opt as PizzaStyle)} />
           </div>
 
-          {recipesForStyle.length > 0 && (
+          {(recipesForStyle.length > 0 || customRecipesForStyle.length > 0) && (
             <div>
-                <SectionHeader>Pre-built Recipes</SectionHeader>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {displayedRecipes.map(recipe => (
-                    <div key={recipe.name} className="relative">
-                      <button
-                        type="button"
-                        onClick={() => onRecipeSelect(recipe)}
-                        className={`w-full h-full text-left p-3 pr-10 rounded-lg border-2 transition-all duration-200 ${
-                          selectedRecipe?.name === recipe.name
-                            ? 'border-[#D94F2B] bg-[#D94F2B]/10 dark:bg-[#D94F2B]/20'
-                            : 'border-slate-200 dark:border-slate-700 hover:border-[#D94F2B]/50 dark:hover:border-[#D94F2B] bg-slate-50 dark:bg-slate-800/50'
-                        }`}
-                      >
-                        <p className="font-semibold text-gray-800 dark:text-gray-200">{recipe.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{recipe.description}</p>
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`View details for ${recipe.name}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDetailedRecipe(recipe);
-                        }}
-                        className="absolute top-3 right-3 p-1 rounded-full text-gray-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#D94F2B]"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
+              <SectionHeader>Recipes</SectionHeader>
+              <div className="flex border-b border-slate-200 dark:border-slate-700 mb-4">
+                <button
+                  onClick={() => setActiveRecipeTab('pre-built')}
+                  className={`px-4 py-2 text-sm font-semibold transition-colors ${activeRecipeTab === 'pre-built' ? 'border-b-2 border-[#D94F2B] text-[#D94F2B]' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                >
+                  Pre-built
+                </button>
+                <button
+                  onClick={() => setActiveRecipeTab('my-recipes')}
+                  className={`px-4 py-2 text-sm font-semibold transition-colors ${activeRecipeTab === 'my-recipes' ? 'border-b-2 border-[#D94F2B] text-[#D94F2B]' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                >
+                  My Recipes ({customRecipesForStyle.length})
+                </button>
+              </div>
+
+              {activeRecipeTab === 'pre-built' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {displayedRecipes.map(recipe => (
+                      <div key={recipe.name} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => onRecipeSelect(recipe)}
+                          className={`w-full h-full text-left p-3 pr-10 rounded-lg border-2 transition-all duration-200 ${
+                            selectedRecipeIdentifier === recipe.name
+                              ? 'border-[#D94F2B] bg-[#D94F2B]/10 dark:bg-[#D94F2B]/20'
+                              : 'border-slate-200 dark:border-slate-700 hover:border-[#D94F2B]/50 dark:hover:border-[#D94F2B] bg-slate-50 dark:bg-slate-800/50'
+                          }`}
+                        >
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{recipe.name}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{recipe.description}</p>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`View details for ${recipe.name}`}
+                          onClick={(e) => { e.stopPropagation(); setDetailedRecipe(recipe); }}
+                          className="absolute top-3 right-3 p-1 rounded-full text-gray-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#D94F2B]"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {recipesForStyle.length > 2 && (
+                    <div className="mt-4 text-center">
+                      <button type="button" onClick={() => setShowAllRecipes(prev => !prev)} className="text-sm font-semibold text-[#D94F2B] hover:text-[#c04524] dark:hover:text-orange-400 focus:outline-none focus:underline">
+                        {showAllRecipes ? 'Show Less' : `Show ${recipesForStyle.length - 2} more...`}
                       </button>
                     </div>
-                  ))}
-                </div>
-                {recipesForStyle.length > 2 && (
-                  <div className="mt-4 text-center">
-                    <button
-                      type="button"
-                      onClick={() => setShowAllRecipes(prev => !prev)}
-                      className="text-sm font-semibold text-[#D94F2B] hover:text-[#c04524] dark:hover:text-orange-400 focus:outline-none focus:underline"
-                    >
-                      {showAllRecipes ? 'Show Less' : `Show ${recipesForStyle.length - 2} more...`}
-                    </button>
+                  )}
+                </>
+              )}
+              
+              {activeRecipeTab === 'my-recipes' && (
+                customRecipesForStyle.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {customRecipesForStyle.map(recipe => (
+                       <div key={recipe.id} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => onRecipeSelect(recipe)}
+                          className={`w-full h-full text-left p-3 pr-10 rounded-lg border-2 transition-all duration-200 ${
+                            selectedRecipeIdentifier === recipe.id
+                              ? 'border-[#D94F2B] bg-[#D94F2B]/10 dark:bg-[#D94F2B]/20'
+                              : 'border-slate-200 dark:border-slate-700 hover:border-[#D94F2B]/50 dark:hover:border-[#D94F2B] bg-slate-50 dark:bg-slate-800/50'
+                          }`}
+                        >
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{recipe.name}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{recipe.description}</p>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={`Delete recipe ${recipe.name}`}
+                          onClick={(e) => { e.stopPropagation(); onDeleteCustomRecipe(recipe.id); }}
+                          className="absolute top-3 right-3 p-1 rounded-full text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                )}
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <p>You haven't saved any {pizzaStyle} recipes yet.</p>
+                    <p className="text-sm mt-1">Create a recipe and click "Save" in the results panel.</p>
+                  </div>
+                )
+              )}
+
             </div>
           )}
           
@@ -212,27 +285,46 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
               <NumberInput label="Number of Dough Balls" value={params.ballCount} onChange={(v) => onParamChange('ballCount', v)} min={1} />
             </div>
 
-            {params.pizzaStyle === 'Teglia' && (
+            {showTrayControls && (
               <div className="mt-6 space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <h4 className="font-semibold text-gray-800 dark:text-gray-200">Tray Size &amp; Thickness</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400 -mt-2">Define your tray size to automatically calculate the required dough weight.</p>
                   
-                  <Tabs options={TEGLIA_SHAPES} selected={params.tegliaShape} onSelect={(v) => onParamChange('tegliaShape', v as TegliaShape)} />
+                  <Tabs 
+                    options={TEGLIA_SHAPES} 
+                    selected={isTeglia ? params.tegliaShape : params.focacciaShape} 
+                    onSelect={(v) => onParamChange(isTeglia ? 'tegliaShape' : 'focacciaShape', v as TegliaShape)} 
+                  />
 
-                  {params.tegliaShape === 'square' ? (
+                  {(isTeglia ? params.tegliaShape : params.focacciaShape) === 'square' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <NumberInput label="Length (cm)" value={params.tegliaLength} onChange={(v) => onParamChange('tegliaLength', v)} min={10} />
-                      <NumberInput label="Width (cm)" value={params.tegliaWidth} onChange={(v) => onParamChange('tegliaWidth', v)} min={10} />
+                      <NumberInput 
+                        label="Length (cm)" 
+                        value={isTeglia ? params.tegliaLength : params.focacciaLength} 
+                        onChange={(v) => onParamChange(isTeglia ? 'tegliaLength' : 'focacciaLength', v)} 
+                        min={10} 
+                      />
+                      <NumberInput 
+                        label="Width (cm)" 
+                        value={isTeglia ? params.tegliaWidth : params.focacciaWidth} 
+                        onChange={(v) => onParamChange(isTeglia ? 'tegliaWidth' : 'focacciaWidth', v)} 
+                        min={10} 
+                      />
                     </div>
                   ) : (
-                    <NumberInput label="Diameter (cm)" value={params.tegliaDiameter} onChange={(v) => onParamChange('tegliaDiameter', v)} min={10} />
+                    <NumberInput 
+                      label="Diameter (cm)" 
+                      value={isTeglia ? params.tegliaDiameter : params.focacciaDiameter} 
+                      onChange={(v) => onParamChange(isTeglia ? 'tegliaDiameter' : 'focacciaDiameter', v)} 
+                      min={10} 
+                    />
                   )}
 
                   <StepSlider 
                     label="Thickness"
                     options={TEGLIA_THICKNESS_LEVELS}
-                    value={params.tegliaThickness}
-                    onChange={(v) => onParamChange('tegliaThickness', v as TegliaThickness)}
+                    value={isTeglia ? params.tegliaThickness : params.focacciaThickness}
+                    onChange={(v) => onParamChange(isTeglia ? 'tegliaThickness' : 'focacciaThickness', v as TegliaThickness)}
                   />
               </div>
             )}

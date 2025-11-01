@@ -29,6 +29,13 @@ export interface CalculationParams {
   tegliaLength: number;
   tegliaWidth: number;
   tegliaThickness: TegliaThickness;
+
+  // Focaccia specific
+  focacciaShape: TegliaShape;
+  focacciaDiameter: number;
+  focacciaLength: number;
+  focacciaWidth: number;
+  focacciaThickness: TegliaThickness;
 }
 
 export interface IngredientSet {
@@ -73,4 +80,12 @@ export interface PrebuiltRecipe {
   bulkFermentation: string;
   proofing: string;
   baking: string;
+}
+
+export interface CustomRecipe {
+  id: string;
+  name: string;
+  description: string;
+  pizzaStyle: PizzaStyle;
+  params: CalculationParams;
 }

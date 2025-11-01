@@ -1,47 +1,75 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { CalculatorForm } from './components/CalculatorForm';
 import { ResultsDisplay } from './components/ResultsDisplay';
 import { Footer } from './components/Footer';
-import type { CalculationParams, CalculationResult, PizzaStyle, DoughMethod, PrebuiltRecipe } from './types';
+import { SaveRecipeModal } from './components/SaveRecipeModal';
+import type { CalculationParams, CalculationResult, PizzaStyle, DoughMethod, PrebuiltRecipe, CustomRecipe } from './types';
 import { calculateDough } from './services/calculationService';
+import { getCustomRecipes, saveCustomRecipes } from './services/recipeService';
 import { PIZZA_STYLES, DOUGH_METHODS, DEFAULT_PARAMS } from './constants';
 import { PREBUILT_RECIPES } from './data/recipes';
 
 const App: React.FC = () => {
   const [params, setParams] = useState<CalculationParams>(DEFAULT_PARAMS);
   const [results, setResults] = useState<CalculationResult | null>(null);
-  const [selectedRecipe, setSelectedRecipe] = useState<PrebuiltRecipe | null>(null);
+  const [selectedRecipeIdentifier, setSelectedRecipeIdentifier] = useState<string | null>(null);
+  const [customRecipes, setCustomRecipes] = useState<CustomRecipe[]>(() => getCustomRecipes());
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  
+  // Effect to persist custom recipes to localStorage whenever they change
+  useEffect(() => {
+    saveCustomRecipes(customRecipes);
+  }, [customRecipes]);
 
   const handleParamChange = useCallback(<K extends keyof CalculationParams>(param: K, value: CalculationParams[K]) => {
-    setSelectedRecipe(null); // Any manual change creates a custom recipe
+    setSelectedRecipeIdentifier(null); // Any manual change deselects any recipe
     setParams(prevParams => ({ ...prevParams, [param]: value }));
   }, []);
 
   const handleStyleChange = useCallback((style: PizzaStyle) => {
-    setSelectedRecipe(null);
+    setSelectedRecipeIdentifier(null);
     setParams(prev => ({...DEFAULT_PARAMS, pizzaStyle: style, ballCount: prev.ballCount}));
   }, []);
 
   const handleMethodChange = useCallback((method: DoughMethod) => {
-    setSelectedRecipe(null);
+    setSelectedRecipeIdentifier(null);
     setParams(prev => ({ ...prev, doughMethod: method }));
   }, []);
+  
+  const handleRecipeSelect = useCallback((recipe: PrebuiltRecipe | CustomRecipe) => {
+    // Check if it's a custom recipe by looking for the 'id' property
+    if ('id' in recipe) {
+      setParams(recipe.params);
+      setSelectedRecipeIdentifier(recipe.id);
+    } else { // It's a pre-built recipe
+      setParams(prevParams => {
+        const newState = {
+          ...DEFAULT_PARAMS,
+          pizzaStyle: prevParams.pizzaStyle,
+          ballCount: prevParams.ballCount,
+          ballWeight: prevParams.ballWeight,
+        };
+        return { ...newState, ...recipe.params };
+      });
+      setSelectedRecipeIdentifier(recipe.name);
+    }
+  }, []);
+  
+  const handleSaveCustomRecipe = useCallback((name: string, description: string) => {
+    const newRecipe: CustomRecipe = {
+      id: Date.now().toString(),
+      name,
+      description,
+      pizzaStyle: params.pizzaStyle,
+      params: { ...params }, // Save a snapshot of the current params
+    };
+    setCustomRecipes(prev => [...prev, newRecipe]);
+    setIsSaveModalOpen(false);
+  }, [params]);
 
-  const handleRecipeSelect = useCallback((recipe: PrebuiltRecipe) => {
-    setSelectedRecipe(recipe);
-    setParams(prevParams => {
-      // Create a new base state from defaults, but keep user's quantity and selected style
-      const newState = {
-        ...DEFAULT_PARAMS,
-        pizzaStyle: prevParams.pizzaStyle,
-        ballCount: prevParams.ballCount,
-        ballWeight: prevParams.ballWeight,
-      };
-      // Merge recipe params on top
-      return { ...newState, ...recipe.params };
-    });
+  const handleDeleteCustomRecipe = useCallback((recipeId: string) => {
+    setCustomRecipes(prev => prev.filter(r => r.id !== recipeId));
   }, []);
 
   useEffect(() => {
@@ -63,16 +91,28 @@ const App: React.FC = () => {
               pizzaStyles={PIZZA_STYLES}
               doughMethods={DOUGH_METHODS}
               recipes={PREBUILT_RECIPES}
-              selectedRecipe={selectedRecipe}
+              customRecipes={customRecipes}
+              selectedRecipeIdentifier={selectedRecipeIdentifier}
               onRecipeSelect={handleRecipeSelect}
+              onDeleteCustomRecipe={handleDeleteCustomRecipe}
             />
           </div>
           <div className="lg:col-span-2">
-            <ResultsDisplay results={results} />
+            <ResultsDisplay 
+              results={results} 
+              params={params}
+              onOpenSaveModal={() => setIsSaveModalOpen(true)}
+            />
           </div>
         </div>
       </main>
       <Footer />
+      {isSaveModalOpen && (
+        <SaveRecipeModal 
+          onSave={handleSaveCustomRecipe}
+          onClose={() => setIsSaveModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

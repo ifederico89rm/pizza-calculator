@@ -36,6 +36,12 @@ export const DEFAULT_PARAMS: CalculationParams = {
   tegliaLength: 40,
   tegliaWidth: 30,
   tegliaThickness: 'normal',
+
+  focacciaShape: 'square',
+  focacciaDiameter: 32,
+  focacciaLength: 40,
+  focacciaWidth: 30,
+  focacciaThickness: 'normal',
 };
 
 // Mapping from poolish maturation hours to fresh yeast percentage
