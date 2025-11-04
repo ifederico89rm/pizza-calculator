@@ -1,6 +1,6 @@
 {
-  "name": "All Styles Pizza Calculator",
-  "short_name": "PizzaCalc",
+  "name": "All Styles Dough Calculator",
+  "short_name": "DoughCalc",
   "description": "An interactive calculator for professional and amateur pizza makers to generate dough recipes for various pizza styles.",
   "icons": [
     {

@@ -1,6 +1,6 @@
 import type { CalculationParams, PizzaStyle, DoughMethod, TegliaShape, TegliaThickness } from './types';
 
-export const PIZZA_STYLES: PizzaStyle[] = ['Napoletana', 'Romana', 'Teglia', 'Focaccia'];
+export const PIZZA_STYLES: PizzaStyle[] = ['Napoletana', 'Tonda Romana', 'Teglia Romana', 'Focaccia'];
 export const DOUGH_METHODS: DoughMethod[] = ['Direct', 'Biga', 'Poolish'];
 
 export const TEGLIA_SHAPES: TegliaShape[] = ['square', 'round'];

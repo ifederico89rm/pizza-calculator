@@ -1,4 +1,4 @@
-export type PizzaStyle = 'Napoletana' | 'Romana' | 'Teglia' | 'Focaccia';
+export type PizzaStyle = 'Napoletana' | 'Tonda Romana' | 'Teglia Romana' | 'Focaccia';
 export type DoughMethod = 'Direct' | 'Biga' | 'Poolish';
 export type TegliaShape = 'square' | 'round';
 export type TegliaThickness = 'very thin' | 'thin' | 'normal' | 'thick' | 'very thick';

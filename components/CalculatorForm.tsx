@@ -125,7 +125,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   const recipesForStyle = recipes[pizzaStyle] || [];
   const customRecipesForStyle = customRecipes.filter(r => r.pizzaStyle === pizzaStyle);
 
-  const isTeglia = pizzaStyle === 'Teglia';
+  const isTeglia = pizzaStyle === 'Teglia Romana';
   const isFocaccia = pizzaStyle === 'Focaccia';
   const showTrayControls = isTeglia || isFocaccia;
 

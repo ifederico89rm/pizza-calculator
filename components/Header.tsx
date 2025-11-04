@@ -10,7 +10,7 @@ export const Header: React.FC = () => (
           <text x="50" y="55" fontFamily="'Luckiest Guy', cursive" fontSize="30" textAnchor="middle">STYLES</text>
           <text x="50" y="85" fontFamily="'Luckiest Guy', cursive" fontSize="30" textAnchor="middle">PIZZA</text>
         </svg>
-        <h1 className="ml-4 text-3xl text-slate-800 dark:text-slate-200">Pizza Calculator</h1>
+        <h1 className="ml-4 text-3xl text-slate-800 dark:text-slate-200">Dough Calculator</h1>
       </div>
       <PWAInstallButton />
     </div>

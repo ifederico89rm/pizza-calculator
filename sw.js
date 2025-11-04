@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pizza-calculator-v2';
+const CACHE_NAME = 'dough-calculator-v2';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',

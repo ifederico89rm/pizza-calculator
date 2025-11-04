@@ -83,8 +83,10 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, params,
       message += `- Maturation: ${params.poolishHours} hours\n\n`;
     }
 
-    if (params.pizzaStyle === 'Teglia' || params.pizzaStyle === 'Focaccia') {
-      const isTeglia = params.pizzaStyle === 'Teglia';
+    // Fix: Used 'Teglia Romana' instead of 'Teglia' to match the PizzaStyle type.
+    if (params.pizzaStyle === 'Teglia Romana' || params.pizzaStyle === 'Focaccia') {
+      // Fix: Used 'Teglia Romana' instead of 'Teglia' to match the PizzaStyle type.
+      const isTeglia = params.pizzaStyle === 'Teglia Romana';
       const shape = isTeglia ? params.tegliaShape : params.focacciaShape;
       const thickness = isTeglia ? params.tegliaThickness : params.focacciaThickness;
       

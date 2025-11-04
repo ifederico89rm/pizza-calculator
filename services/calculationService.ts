@@ -15,14 +15,12 @@ const getPoolishYeastPercent = (hours: number): number => {
 export const calculateDough = (params: CalculationParams): CalculationResult => {
   const totalDoughWeight = params.ballCount * params.ballWeight;
 
-  const oilPercent = params.pizzaStyle === 'Romana' && params.oliveOil === 0 ? 3 : params.oliveOil;
+  const oilPercent = params.pizzaStyle === 'Tonda Romana' && params.oliveOil === 0 ? 3 : params.oliveOil;
 
   const flourFactor = 1 +
     (params.hydration / 100) +
     (params.salt / 100) +
-    (oilPercent / 100) +
-    (params.malt / 100) +
-    (params.freshYeast / 100);
+    (oilPercent / 100);
 
   const totalFlour = totalDoughWeight / flourFactor;
 
