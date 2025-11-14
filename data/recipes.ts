@@ -283,9 +283,9 @@ export const PREBUILT_RECIPES: Record<DoughStyle, PrebuiltRecipe[]> = {
         eggYolk: 1,
       },
       wFlourFinalDough: "W 300-350 (Manitoba or strong flour)",
-      bulkFermentation: "1 hour at room temperature (~24-26°C), or until doubled in volume.",
-      proofing: "Shape into 100g balls. Let rise for another 1-2 hours in a warm place, until puffy and light. Brush with egg wash before baking.",
-      baking: "Bake at 190°C (375°F) for 15-20 minutes, until golden brown.",
+      bulkFermentation: "Mix all the ingredients together. Then gradually add the eggs and butter, a little at a time. 2-3 hours at room temperature (~24-26°C), or until triple in volume.",
+      proofing: "Shape into 100g balls. Let rise for another 30 minutes in a warm place, After 30 minutes, brush the buns with oil and press them down slightly, then add the seeds. “After 3 hours at 24–26°C, they are ready to be sprayed with milk.",
+      baking: "Bake at 230°C for 11 minutes, until golden brown.",
     }
   ],
 };
