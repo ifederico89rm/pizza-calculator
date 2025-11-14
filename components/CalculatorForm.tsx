@@ -6,6 +6,7 @@ import { StepSlider } from './StepSlider';
 import { Tabs } from './Tabs';
 import { TEGLIA_SHAPES, TEGLIA_THICKNESS_LEVELS, TEGLIA_THICKNESS_MAP } from '../constants';
 import { RecipeDetailModal } from './RecipeDetailModal';
+import { useLanguage } from '../i18n';
 
 
 interface CalculatorFormProps {
@@ -45,6 +46,7 @@ const NumberInput: React.FC<{
   step?: number;
   min?: number;
 }> = ({ label, value, onChange, step = 1, min = 1 }) => {
+  const { t } = useLanguage();
   const handleIncrement = () => onChange(value + step);
   const handleDecrement = () => {
     const newValue = value - step;
@@ -76,7 +78,7 @@ const NumberInput: React.FC<{
         <button
           type="button"
           onClick={handleDecrement}
-          aria-label={`Decrease ${label}`}
+          aria-label={t('form.aria.decrease', { label })}
           className="px-4 h-11 flex items-center justify-center border border-r-0 border-gray-300 rounded-l-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#D94F2B] focus:outline-none z-10"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" /></svg>
@@ -93,7 +95,7 @@ const NumberInput: React.FC<{
         <button
           type="button"
           onClick={handleIncrement}
-          aria-label={`Increase ${label}`}
+          aria-label={t('form.aria.increase', { label })}
           className="px-4 h-11 flex items-center justify-center border border-l-0 border-gray-300 rounded-r-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-[#D94F2B] focus:outline-none z-10"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
@@ -116,6 +118,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   onRecipeSelect,
   onDeleteCustomRecipe,
 }) => {
+  const { t } = useLanguage();
   const [showAllRecipes, setShowAllRecipes] = useState(false);
   const [detailedRecipe, setDetailedRecipe] = useState<PrebuiltRecipe | null>(null);
   const [activeRecipeTab, setActiveRecipeTab] = useState<'pre-built' | 'my-recipes'>('pre-built');
@@ -186,25 +189,30 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
       <Card>
         <div className="space-y-8">
           <div>
-            <SectionHeader>Dough Style</SectionHeader>
-            <Tabs options={doughStyles} selected={params.doughStyle} onSelect={(opt) => onDoughStyleChange(opt as DoughStyle)} />
+            <SectionHeader>{t('form.doughStyle')}</SectionHeader>
+            <Tabs 
+              options={doughStyles} 
+              selected={params.doughStyle} 
+              onSelect={(opt) => onDoughStyleChange(opt as DoughStyle)}
+              translateFn={(key) => t(`doughStyles.${key}`)}
+            />
           </div>
 
           {(recipesForStyle.length > 0 || customRecipesForStyle.length > 0) && (
             <div>
-              <SectionHeader>Recipes</SectionHeader>
+              <SectionHeader>{t('form.recipes.title')}</SectionHeader>
               <div className="flex border-b border-slate-200 dark:border-slate-700 mb-4">
                 <button
                   onClick={() => setActiveRecipeTab('pre-built')}
                   className={`px-4 py-2 text-sm font-semibold transition-colors ${activeRecipeTab === 'pre-built' ? 'border-b-2 border-[#D94F2B] text-[#D94F2B]' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
                 >
-                  Pre-built
+                  {t('form.recipes.prebuilt')}
                 </button>
                 <button
                   onClick={() => setActiveRecipeTab('my-recipes')}
                   className={`px-4 py-2 text-sm font-semibold transition-colors ${activeRecipeTab === 'my-recipes' ? 'border-b-2 border-[#D94F2B] text-[#D94F2B]' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
                 >
-                  My Recipes ({customRecipesForStyle.length})
+                  {t('form.recipes.myRecipes')} ({customRecipesForStyle.length})
                 </button>
               </div>
 
@@ -227,7 +235,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                         </button>
                         <button
                           type="button"
-                          aria-label={`View details for ${recipe.name}`}
+                          aria-label={t('form.aria.viewDetails', { recipeName: recipe.name })}
                           onClick={(e) => { e.stopPropagation(); setDetailedRecipe(recipe); }}
                           className="absolute top-3 right-3 p-1 rounded-full text-gray-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#D94F2B]"
                         >
@@ -239,7 +247,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                   {recipesForStyle.length > 2 && (
                     <div className="mt-4 text-center">
                       <button type="button" onClick={() => setShowAllRecipes(prev => !prev)} className="text-sm font-semibold text-[#D94F2B] hover:text-[#c04524] dark:hover:text-orange-400 focus:outline-none focus:underline">
-                        {showAllRecipes ? 'Show Less' : `Show ${recipesForStyle.length - 2} more...`}
+                        {showAllRecipes ? t('form.recipes.showLess') : t('form.recipes.showMore', { count: recipesForStyle.length - 2 })}
                       </button>
                     </div>
                   )}
@@ -265,7 +273,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                         </button>
                         <button
                           type="button"
-                          aria-label={`Delete recipe ${recipe.name}`}
+                          aria-label={t('form.aria.deleteRecipe', { recipeName: recipe.name })}
                           onClick={(e) => { e.stopPropagation(); onDeleteCustomRecipe(recipe.id); }}
                           className="absolute top-3 right-3 p-1 rounded-full text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500"
                         >
@@ -276,8 +284,8 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                    <p>You haven't saved any {doughStyle} recipes yet.</p>
-                    <p className="text-sm mt-1">Create a recipe and click "Save" in the results panel.</p>
+                    <p>{t('form.recipes.noCustomRecipes', { doughStyle: t(`doughStyles.${doughStyle}`) })}</p>
+                    <p className="text-sm mt-1">{t('form.recipes.noCustomRecipesHint')}</p>
                   </div>
                 )
               )}
@@ -286,37 +294,43 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
           )}
           
           <div>
-            <SectionHeader>Dough Method</SectionHeader>
-            <Tabs options={doughMethods} selected={params.doughMethod} onSelect={(opt) => onMethodChange(opt as DoughMethod)} />
+            <SectionHeader>{t('form.doughMethod')}</SectionHeader>
+            <Tabs 
+              options={doughMethods} 
+              selected={params.doughMethod} 
+              onSelect={(opt) => onMethodChange(opt as DoughMethod)} 
+              translateFn={(key) => t(`doughMethods.${key}`)}
+            />
           </div>
 
           <div>
-            <SectionHeader>Quantity</SectionHeader>
+            <SectionHeader>{t('form.quantity.title')}</SectionHeader>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <NumberInput label="Number of Dough Balls" value={params.ballCount} onChange={(v) => onParamChange('ballCount', v)} min={1} />
+              <NumberInput label={t('form.quantity.ballCount')} value={params.ballCount} onChange={(v) => onParamChange('ballCount', v)} min={1} />
             </div>
 
             {showTrayControls && (
               <div className="mt-6 space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <h4 className="font-semibold text-gray-800 dark:text-gray-200">Tray Size &amp; Thickness</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 -mt-2">Define your tray size to automatically calculate the required dough weight.</p>
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200">{t('form.quantity.tray.title')}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 -mt-2">{t('form.quantity.tray.description')}</p>
                   
                   <Tabs 
                     options={TEGLIA_SHAPES} 
                     selected={isTeglia ? params.tegliaShape : params.focacciaShape} 
                     onSelect={(v) => onParamChange(isTeglia ? 'tegliaShape' : 'focacciaShape', v as TegliaShape)} 
+                    translateFn={(key) => t(`tegliaShapes.${key}`)}
                   />
 
                   {(isTeglia ? params.tegliaShape : params.focacciaShape) === 'square' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <NumberInput 
-                        label="Length (cm)" 
+                        label={`${t('form.quantity.tray.length')} (cm)`}
                         value={isTeglia ? params.tegliaLength : params.focacciaLength} 
                         onChange={(v) => onParamChange(isTeglia ? 'tegliaLength' : 'focacciaLength', v)} 
                         min={10} 
                       />
                       <NumberInput 
-                        label="Width (cm)" 
+                        label={`${t('form.quantity.tray.width')} (cm)`}
                         value={isTeglia ? params.tegliaWidth : params.focacciaWidth} 
                         onChange={(v) => onParamChange(isTeglia ? 'tegliaWidth' : 'focacciaWidth', v)} 
                         min={10} 
@@ -324,7 +338,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                     </div>
                   ) : (
                     <NumberInput 
-                      label="Diameter (cm)" 
+                      label={`${t('form.quantity.tray.diameter')} (cm)`}
                       value={isTeglia ? params.tegliaDiameter : params.focacciaDiameter} 
                       onChange={(v) => onParamChange(isTeglia ? 'tegliaDiameter' : 'focacciaDiameter', v)} 
                       min={10} 
@@ -332,61 +346,62 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                   )}
 
                   <StepSlider 
-                    label="Thickness"
+                    label={t('form.quantity.tray.thickness')}
                     options={TEGLIA_THICKNESS_LEVELS}
                     value={isTeglia ? params.tegliaThickness : params.focacciaThickness}
                     onChange={(v) => onParamChange(isTeglia ? 'tegliaThickness' : 'focacciaThickness', v as TegliaThickness)}
+                    translateFn={(key) => t(`tegliaThicknesses.${key}`)}
                   />
               </div>
             )}
             <div className="mt-4">
-              <NumberInput label="Weight per Ball (gr)" value={params.ballWeight} onChange={(v) => onParamChange('ballWeight', v)} step={10} min={10} />
+              <NumberInput label={`${t('form.quantity.ballWeight')} (gr)`} value={params.ballWeight} onChange={(v) => onParamChange('ballWeight', v)} step={10} min={10} />
             </div>
           </div>
 
           <div>
-            <SectionHeader>Dough Parameters</SectionHeader>
+            <SectionHeader>{t('form.parameters.title')}</SectionHeader>
             {params.doughStyle === 'Buns' ? (
               <div className="space-y-4">
-                <SliderInput icon={icons.hydration} label="Milk" value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
-                <SliderInput icon={icons.butter} label="Butter" value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={30} step={0.5} unit="%" />
-                <SliderInput icon={icons.sugar} label="Sugar" value={params.sugar} onChange={(v) => onParamChange('sugar', v)} min={0} max={30} step={0.5} unit="%" />
+                <SliderInput icon={icons.hydration} label={t('ingredients.milk')} value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
+                <SliderInput icon={icons.butter} label={t('ingredients.butter')} value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={30} step={0.5} unit="%" />
+                <SliderInput icon={icons.sugar} label={t('ingredients.sugar')} value={params.sugar} onChange={(v) => onParamChange('sugar', v)} min={0} max={30} step={0.5} unit="%" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <NumberInput label="Whole Eggs" value={params.wholeEgg} onChange={(v) => onParamChange('wholeEgg', v)} min={0} />
-                  <NumberInput label="Egg Yolks" value={params.eggYolk} onChange={(v) => onParamChange('eggYolk', v)} min={0} />
+                  <NumberInput label={t('ingredients.wholeEgg')} value={params.wholeEgg} onChange={(v) => onParamChange('wholeEgg', v)} min={0} />
+                  <NumberInput label={t('ingredients.eggYolk')} value={params.eggYolk} onChange={(v) => onParamChange('eggYolk', v)} min={0} />
                 </div>
-                <SliderInput icon={icons.malt} label="Syrup Malt" value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={10} step={0.1} unit="%" />
-                <SliderInput icon={icons.salt} label="Salt" value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
-                <SliderInput icon={icons.freshYeast} label="Fresh Yeast" value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={10} step={0.1} unit="%" />
+                <SliderInput icon={icons.malt} label={t('ingredients.malt')} value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={10} step={0.1} unit="%" />
+                <SliderInput icon={icons.salt} label={t('ingredients.salt')} value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
+                <SliderInput icon={icons.freshYeast} label={t('ingredients.freshYeast')} value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={10} step={0.1} unit="%" />
               </div>
             ) : (
               <div className="space-y-4">
-                <SliderInput icon={icons.hydration} label="Hydration" value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
-                <SliderInput icon={icons.salt} label="Salt" value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
-                <SliderInput icon={icons.freshYeast} label="Fresh Yeast" value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={3} step={0.1} unit="%" />
-                <SliderInput icon={icons.malt} label="Malt" value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={5} step={0.1} unit="%" />
-                <SliderInput icon={icons.oliveOil} label="Olive Oil" value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={10} step={0.1} unit="%" />
+                <SliderInput icon={icons.hydration} label={t('ingredients.hydration')} value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
+                <SliderInput icon={icons.salt} label={t('ingredients.salt')} value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
+                <SliderInput icon={icons.freshYeast} label={t('ingredients.freshYeast')} value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={3} step={0.1} unit="%" />
+                <SliderInput icon={icons.malt} label={t('ingredients.malt')} value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={5} step={0.1} unit="%" />
+                <SliderInput icon={icons.oliveOil} label={t('ingredients.oliveOil')} value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={10} step={0.1} unit="%" />
               </div>
             )}
           </div>
 
           {params.doughMethod === 'Biga' && (
             <div>
-              <SectionHeader>Biga Parameters</SectionHeader>
+              <SectionHeader>{t('form.parameters.biga.title')}</SectionHeader>
               <div className="space-y-4">
-                  <SliderInput label="Biga Percentage" value={params.bigaPercentage} onChange={(v) => onParamChange('bigaPercentage', v)} min={10} max={100} unit="%" />
-                  <SliderInput label="Biga Hydration" value={params.bigaHydration} onChange={(v) => onParamChange('bigaHydration', v)} min={40} max={60} unit="%" />
-                  <SliderInput label="Biga Fresh Yeast" value={params.bigaFreshYeast} onChange={(v) => onParamChange('bigaFreshYeast', v)} min={0} max={1} step={0.01} unit="%" />
+                  <SliderInput label={t('form.parameters.biga.percentage')} value={params.bigaPercentage} onChange={(v) => onParamChange('bigaPercentage', v)} min={10} max={100} unit="%" />
+                  <SliderInput label={t('form.parameters.biga.hydration')} value={params.bigaHydration} onChange={(v) => onParamChange('bigaHydration', v)} min={40} max={60} unit="%" />
+                  <SliderInput label={t('form.parameters.biga.yeast')} value={params.bigaFreshYeast} onChange={(v) => onParamChange('bigaFreshYeast', v)} min={0} max={1} step={0.01} unit="%" />
               </div>
             </div>
           )}
 
           {params.doughMethod === 'Poolish' && (
             <div>
-              <SectionHeader>Poolish Parameters</SectionHeader>
+              <SectionHeader>{t('form.parameters.poolish.title')}</SectionHeader>
               <div className="space-y-4">
-                  <SliderInput label="Poolish Percentage" value={params.poolishPercentage} onChange={(v) => onParamChange('poolishPercentage', v)} min={10} max={params.hydration} unit="%" />
-                  <SliderInput label="Maturation Hours" value={params.poolishHours} onChange={(v) => onParamChange('poolishHours', v)} min={1} max={18} unit="h" />
+                  <SliderInput label={t('form.parameters.poolish.percentage')} value={params.poolishPercentage} onChange={(v) => onParamChange('poolishPercentage', v)} min={10} max={params.hydration} unit="%" />
+                  <SliderInput label={t('form.parameters.poolish.hours')} value={params.poolishHours} onChange={(v) => onParamChange('poolishHours', v)} min={1} max={18} unit="h" />
               </div>
             </div>
           )}

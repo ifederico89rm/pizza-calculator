@@ -4,10 +4,11 @@ interface TabsProps {
   options: string[];
   selected: string;
   onSelect: (option: string) => void;
+  translateFn?: (key: string) => string;
 }
 
-export const Tabs: React.FC<TabsProps> = ({ options, selected, onSelect }) => {
-  const gridColsClass = options.length === 3 ? 'grid-cols-3' : 'grid-cols-2';
+export const Tabs: React.FC<TabsProps> = ({ options, selected, onSelect, translateFn = (key) => key }) => {
+  const gridColsClass = options.length === 3 ? 'grid-cols-3' : (options.length > 3 ? 'grid-cols-3 sm:grid-cols-6' : 'grid-cols-2');
   
   return (
     <div className={`grid ${gridColsClass} gap-2 p-1.5 bg-slate-200/60 dark:bg-slate-700/60 rounded-xl`}>
@@ -21,7 +22,7 @@ export const Tabs: React.FC<TabsProps> = ({ options, selected, onSelect }) => {
               : 'text-slate-600 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-800/60'
           }`}
         >
-          {option}
+          {translateFn(option)}
         </button>
       ))}
     </div>

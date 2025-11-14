@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 
 interface StepSliderProps {
@@ -7,9 +8,10 @@ interface StepSliderProps {
   value: string;
   onChange: (value: string) => void;
   icon?: React.ReactNode;
+  translateFn?: (key: string) => string;
 }
 
-export const StepSlider: React.FC<StepSliderProps> = ({ label, options, value, onChange, icon }) => {
+export const StepSlider: React.FC<StepSliderProps> = ({ label, options, value, onChange, icon, translateFn = (key) => key }) => {
   const valueIndex = options.indexOf(value);
   const maxIndex = options.length - 1;
 
@@ -25,7 +27,7 @@ export const StepSlider: React.FC<StepSliderProps> = ({ label, options, value, o
           {icon}
           {label}
         </label>
-        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 capitalize">{value}</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 capitalize">{translateFn(value)}</span>
       </div>
       <div className="relative pt-2">
         <input
@@ -51,7 +53,7 @@ export const StepSlider: React.FC<StepSliderProps> = ({ label, options, value, o
         />
         <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1.5 -mx-1">
           {options.map((option) => (
-            <span key={option} className="flex-1 text-center capitalize">{option}</span>
+            <span key={option} className="flex-1 text-center capitalize">{translateFn(option)}</span>
           ))}
         </div>
       </div>

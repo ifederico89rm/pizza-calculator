@@ -2,22 +2,6 @@ import type { DoughStyle, PrebuiltRecipe } from '../types';
 
 export const PREBUILT_RECIPES: Record<DoughStyle, PrebuiltRecipe[]> = {
   Napoletana: [
-    /*{
-      name: "Classic Neapolitan",
-      description: "A traditional recipe for a soft, airy crust, using the direct method.",
-      params: {
-        doughMethod: 'Direct',
-        hydration: 65,
-        salt: 2.8,
-        freshYeast: 0.2,
-        malt: 0,
-        oliveOil: 0,
-      },
-      wFlourFinalDough: "W 260-280",
-      bulkFermentation: "2 hours at room temperature (~20°C).",
-      proofing: "6-8 hours at room temperature (~20°C).",
-      baking: "450-480°C for 60-90 seconds in a wood-fired oven.",
-    },*/
     {
       name: "F_Contemporary direct 48h",
       description: "Modern approach for a more complex flavor and open crumb.",
@@ -74,25 +58,6 @@ export const PREBUILT_RECIPES: Record<DoughStyle, PrebuiltRecipe[]> = {
       proofing: "The final proofing can take place either in a refrigerator for another 8–12 hours at 6–8 °C, or at room temperature for another 4–6 hours at 20–24 °C",
       baking: "Bake in an oven at 380–400 °C for 90–120 seconds.",
     },
-    /*{
-        name: "Light Poolish",
-        description: "A lighter dough with a crispy crust, fermented with a Poolish preferment.",
-        params: {
-            doughMethod: 'Poolish',
-            hydration: 68,
-            salt: 2.7,
-            freshYeast: 0.15,
-            malt: 0,
-            oliveOil: 0,
-            poolishPercentage: 20,
-            poolishHours: 12,
-        },
-        wFlourPreferment: "W 280-300",
-        wFlourFinalDough: "W 260-280",
-        bulkFermentation: "Poolish: 12 hours at 18-20°C. Final Dough: 1 hour at room temp, then 12h at 4-6°C.",
-        proofing: "4-6 hours at room temperature.",
-        baking: "430-450°C for 90 seconds.",
-    }*/
   ],
   "Tonda Romana": [
     {
@@ -207,26 +172,7 @@ export const PREBUILT_RECIPES: Record<DoughStyle, PrebuiltRecipe[]> = {
       bulkFermentation: "Ready to go into the refrigerator at 4–6 °C for about 24 hours. The volume should increase by approximately 200%.It should still appear convex and firm, without excessive bubbles or any collapse of the structure.",
       proofing: "At 22 °C, may take 6–8 hours. In the refrigerator, it can take up to 24 hours. The dough should roughly double, or slightly more, in volume.",
       baking: "First stage: set the oven temperature between 270 and 300 °C, using only the bottom heat for 6–8 minutes. Second stage: turn on the top heat for another 3–4 minutes.After this step (optional), let the pizza rest, then reheat it with the additional ingredients (toppings) for 3–5 minutes at 250–300 °C.",
-    }/*,
-    {
-        name: "Flavorful Poolish",
-        description: "Poolish brings a delicate flavor and a light, digestible crumb.",
-        params: {
-            doughMethod: 'Poolish',
-            hydration: 78,
-            salt: 2.2,
-            freshYeast: 0.3,
-            malt: 0,
-            oliveOil: 4,
-            poolishPercentage: 30,
-            poolishHours: 10,
-        },
-        wFlourPreferment: "W 300-330",
-        wFlourFinalDough: "W 280-310",
-        bulkFermentation: "Poolish: 10h at 18°C. Final dough: 1h at room temp, then 18h at 4-6°C.",
-        proofing: "3-4 hours in the pan at room temperature.",
-        baking: "Bake at 250°C. Phase 1 (base only): 10-12 mins. Phase 2 (with toppings): 5-7 mins.",
-    }*/
+    }
   ],
   Focaccia: [
     {
@@ -245,26 +191,6 @@ export const PREBUILT_RECIPES: Record<DoughStyle, PrebuiltRecipe[]> = {
       proofing: "First fermentation takes place in the refrigerator at 4–6 °C for 24 hours. Second fermentation in the pan at 26-28 °C per 60-90 minutes. After made the holes add saline solution, leave the dough fermenting for the third and last proofing at 26-28 °C per 90-120 minutes",
       baking: "230-240°C for 11-14 minutes.",
     }
-    /*
-    {
-        name: "Soft Poolish Focaccia",
-        description: "A fluffy and soft focaccia, perfect for sandwiches or as a side.",
-        params: {
-            doughMethod: 'Poolish',
-            hydration: 80,
-            salt: 2.0,
-            freshYeast: 0.4,
-            malt: 0,
-            oliveOil: 10,
-            poolishPercentage: 25,
-            poolishHours: 8,
-        },
-        wFlourPreferment: "W 290-320",
-        wFlourFinalDough: "W 280-300",
-        bulkFermentation: "Poolish: 8h at 20°C. Final dough: 30 mins at room temp, then 12h at 4-6°C.",
-        proofing: "2-3 hours in the pan at a warm temperature (~26°C).",
-        baking: "220°C for 25-30 minutes until golden.",
-    }*/
   ],
   Bread: [],
   Buns: [

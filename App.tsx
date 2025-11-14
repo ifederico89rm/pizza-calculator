@@ -8,9 +8,11 @@ import type { CalculationParams, CalculationResult, DoughStyle, DoughMethod, Pre
 import { calculateDough } from './services/calculationService';
 import { getCustomRecipes, saveCustomRecipes } from './services/recipeService';
 import { DOUGH_STYLES, DOUGH_METHODS, DEFAULT_PARAMS } from './constants';
-import { PREBUILT_RECIPES } from './data/recipes';
+import { useLanguage } from './i18n';
+
 
 const App: React.FC = () => {
+  const { recipes: prebuiltRecipes } = useLanguage();
   const [params, setParams] = useState<CalculationParams>(DEFAULT_PARAMS);
   const [results, setResults] = useState<CalculationResult | null>(null);
   const [selectedRecipeIdentifier, setSelectedRecipeIdentifier] = useState<string | null>(null);
@@ -95,7 +97,7 @@ const App: React.FC = () => {
               onMethodChange={handleMethodChange}
               doughStyles={DOUGH_STYLES}
               doughMethods={DOUGH_METHODS}
-              recipes={PREBUILT_RECIPES}
+              recipes={prebuiltRecipes}
               customRecipes={customRecipes}
               selectedRecipeIdentifier={selectedRecipeIdentifier}
               onRecipeSelect={handleRecipeSelect}

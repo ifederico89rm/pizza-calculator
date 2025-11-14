@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import type { PrebuiltRecipe } from '../types';
 import { Card } from './Card';
+import { useLanguage } from '../i18n';
 
 interface RecipeDetailModalProps {
   recipe: PrebuiltRecipe;
@@ -15,6 +16,8 @@ const DetailSection: React.FC<{ title: string; children: React.ReactNode }> = ({
 );
 
 export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, onClose }) => {
+  const { t } = useLanguage();
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -53,7 +56,7 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, on
             </div>
             <button
               onClick={onClose}
-              aria-label="Close recipe details"
+              aria-label={t('recipeDetail.close')}
               className="p-2 -mt-2 -mr-2 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D94F2B] dark:focus:ring-offset-slate-800"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -63,20 +66,20 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, on
           <hr className="my-6 border-slate-200 dark:border-slate-700" />
 
           <div className="space-y-6">
-            <DetailSection title="Flour Strength (W Value)">
-              {recipe.wFlourPreferment && `Preferment (Biga/Poolish): ${recipe.wFlourPreferment}\n`}
-              {`Final Dough: ${recipe.wFlourFinalDough}`}
+            <DetailSection title={t('recipeDetail.flourStrength')}>
+              {recipe.wFlourPreferment && `${t('recipeDetail.preferment')}: ${recipe.wFlourPreferment}\n`}
+              {`${t('recipeDetail.finalDough')}: ${recipe.wFlourFinalDough}`}
             </DetailSection>
 
-            <DetailSection title="Bulk Fermentation (Puntata)">
+            <DetailSection title={t('recipeDetail.bulkFermentation')}>
               {recipe.bulkFermentation}
             </DetailSection>
 
-            <DetailSection title="Proofing (Appretto)">
+            <DetailSection title={t('recipeDetail.proofing')}>
               {recipe.proofing}
             </DetailSection>
 
-            <DetailSection title="Baking (Cottura)">
+            <DetailSection title={t('recipeDetail.baking')}>
               {recipe.baking}
             </DetailSection>
           </div>
