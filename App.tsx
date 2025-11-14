@@ -4,10 +4,10 @@ import { CalculatorForm } from './components/CalculatorForm';
 import { ResultsDisplay } from './components/ResultsDisplay';
 import { Footer } from './components/Footer';
 import { SaveRecipeModal } from './components/SaveRecipeModal';
-import type { CalculationParams, CalculationResult, PizzaStyle, DoughMethod, PrebuiltRecipe, CustomRecipe } from './types';
+import type { CalculationParams, CalculationResult, DoughStyle, DoughMethod, PrebuiltRecipe, CustomRecipe } from './types';
 import { calculateDough } from './services/calculationService';
 import { getCustomRecipes, saveCustomRecipes } from './services/recipeService';
-import { PIZZA_STYLES, DOUGH_METHODS, DEFAULT_PARAMS } from './constants';
+import { DOUGH_STYLES, DOUGH_METHODS, DEFAULT_PARAMS } from './constants';
 import { PREBUILT_RECIPES } from './data/recipes';
 
 const App: React.FC = () => {
@@ -27,9 +27,14 @@ const App: React.FC = () => {
     setParams(prevParams => ({ ...prevParams, [param]: value }));
   }, []);
 
-  const handleStyleChange = useCallback((style: PizzaStyle) => {
+  const handleDoughStyleChange = useCallback((style: DoughStyle) => {
     setSelectedRecipeIdentifier(null);
-    setParams(prev => ({...DEFAULT_PARAMS, pizzaStyle: style, ballCount: prev.ballCount}));
+    setParams(prev => ({
+      ...DEFAULT_PARAMS, 
+      doughStyle: style, 
+      ballCount: style === 'Buns' ? 18 : (prev.doughStyle === 'Buns' ? DEFAULT_PARAMS.ballCount : prev.ballCount),
+      ballWeight: style === 'Buns' ? 100 : DEFAULT_PARAMS.ballWeight
+    }));
   }, []);
 
   const handleMethodChange = useCallback((method: DoughMethod) => {
@@ -46,7 +51,7 @@ const App: React.FC = () => {
       setParams(prevParams => {
         const newState = {
           ...DEFAULT_PARAMS,
-          pizzaStyle: prevParams.pizzaStyle,
+          doughStyle: prevParams.doughStyle,
           ballCount: prevParams.ballCount,
           ballWeight: prevParams.ballWeight,
         };
@@ -61,7 +66,7 @@ const App: React.FC = () => {
       id: Date.now().toString(),
       name,
       description,
-      pizzaStyle: params.pizzaStyle,
+      doughStyle: params.doughStyle,
       params: { ...params }, // Save a snapshot of the current params
     };
     setCustomRecipes(prev => [...prev, newRecipe]);
@@ -86,9 +91,9 @@ const App: React.FC = () => {
             <CalculatorForm
               params={params}
               onParamChange={handleParamChange}
-              onStyleChange={handleStyleChange}
+              onDoughStyleChange={handleDoughStyleChange}
               onMethodChange={handleMethodChange}
-              pizzaStyles={PIZZA_STYLES}
+              doughStyles={DOUGH_STYLES}
               doughMethods={DOUGH_METHODS}
               recipes={PREBUILT_RECIPES}
               customRecipes={customRecipes}

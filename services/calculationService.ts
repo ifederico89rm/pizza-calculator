@@ -14,15 +14,35 @@ const getPoolishYeastPercent = (hours: number): number => {
 
 export const calculateDough = (params: CalculationParams): CalculationResult => {
   const totalDoughWeight = params.ballCount * params.ballWeight;
+  const oilPercent = params.doughStyle === 'Tonda Romana' && params.oliveOil === 0 ? 3 : params.oliveOil;
 
-  const oilPercent = params.pizzaStyle === 'Tonda Romana' && params.oliveOil === 0 ? 3 : params.oliveOil;
+  let totalFlour: number;
 
-  const flourFactor = 1 +
-    (params.hydration / 100) +
-    (params.salt / 100) +
-    (oilPercent / 100);
+  if (params.doughStyle === 'Buns') {
+    const WHOLE_EGG_WEIGHT = 50; // grams for a large egg
+    const EGG_YOLK_WEIGHT = 20; // grams for a large egg yolk
 
-  const totalFlour = totalDoughWeight / flourFactor;
+    const totalEggWeight = (params.wholeEgg * WHOLE_EGG_WEIGHT) + (params.eggYolk * EGG_YOLK_WEIGHT);
+    const remainingDoughWeight = totalDoughWeight;
+
+    // oilPercent is not used for buns, params.oliveOil is butter.
+    const flourFactor = 1 +
+      (params.hydration / 100) + // Milk
+      (params.salt / 100) +
+      (params.oliveOil / 100) + // Butter
+      (params.malt / 100) +
+      (params.sugar / 100);
+    
+    totalFlour = remainingDoughWeight > 0 ? remainingDoughWeight / flourFactor : 0;
+  } else {
+      const flourFactor = 1 +
+        (params.hydration / 100) +
+        (params.salt / 100) +
+        (oilPercent / 100) +
+        (params.malt / 100);
+      totalFlour = totalDoughWeight / flourFactor;
+  }
+
 
   switch (params.doughMethod) {
     case 'Biga':
@@ -44,7 +64,21 @@ const calculateDirect = (params: CalculationParams, totalFlour: number, totalDou
     oliveOil: round(totalFlour * (oilPercent / 100)),
     malt: round(totalFlour * (params.malt / 100)),
   };
-  finalDough.total = Object.values(finalDough).reduce((sum, val) => sum + val, 0);
+
+  if (params.doughStyle === 'Buns') {
+    const WHOLE_EGG_WEIGHT = 50;
+    const EGG_YOLK_WEIGHT = 20;
+    finalDough.milk = finalDough.water;
+    finalDough.butter = finalDough.oliveOil;
+    finalDough.sugar = round(totalFlour * (params.sugar / 100));
+    finalDough.wholeEgg = round(params.wholeEgg * WHOLE_EGG_WEIGHT);
+    finalDough.eggYolk = round(params.eggYolk * EGG_YOLK_WEIGHT);
+    
+    finalDough.water = 0;
+    finalDough.oliveOil = 0;
+  }
+  
+  finalDough.total = Object.values(finalDough).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
 
   return {
     finalDough,
@@ -67,7 +101,7 @@ const calculateBiga = (params: CalculationParams, totalFlour: number, totalDough
     oliveOil: 0,
     malt: 0
   };
-  preferment.total = Object.values(preferment).reduce((sum, val) => sum + val, 0);
+  preferment.total = Object.values(preferment).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
 
   const finalDough: IngredientSet = {
     flour: round(totalFlour - bigaFlour),
@@ -77,7 +111,21 @@ const calculateBiga = (params: CalculationParams, totalFlour: number, totalDough
     oliveOil: round(totalFlour * (oilPercent / 100)),
     malt: round(totalFlour * (params.malt / 100)),
   };
-  finalDough.total = Object.values(finalDough).reduce((sum, val) => sum + val, 0);
+
+  if (params.doughStyle === 'Buns') {
+    const WHOLE_EGG_WEIGHT = 50;
+    const EGG_YOLK_WEIGHT = 20;
+    finalDough.milk = finalDough.water;
+    finalDough.butter = finalDough.oliveOil;
+    finalDough.sugar = round(totalFlour * (params.sugar / 100));
+    finalDough.wholeEgg = round(params.wholeEgg * WHOLE_EGG_WEIGHT);
+    finalDough.eggYolk = round(params.eggYolk * EGG_YOLK_WEIGHT);
+    
+    finalDough.water = 0;
+    finalDough.oliveOil = 0;
+  }
+  
+  finalDough.total = Object.values(finalDough).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
 
   return {
     finalDough,
@@ -103,7 +151,7 @@ const calculatePoolish = (params: CalculationParams, totalFlour: number, totalDo
     oliveOil: 0,
     malt: 0
   };
-  preferment.total = Object.values(preferment).reduce((sum, val) => sum + val, 0);
+  preferment.total = Object.values(preferment).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
 
   const finalDough: IngredientSet = {
     flour: round(totalFlour - poolishFlour),
@@ -113,7 +161,21 @@ const calculatePoolish = (params: CalculationParams, totalFlour: number, totalDo
     oliveOil: round(totalFlour * (oilPercent / 100)),
     malt: round(totalFlour * (params.malt / 100)),
   };
-  finalDough.total = Object.values(finalDough).reduce((sum, val) => sum + val, 0);
+
+  if (params.doughStyle === 'Buns') {
+    const WHOLE_EGG_WEIGHT = 50;
+    const EGG_YOLK_WEIGHT = 20;
+    finalDough.milk = finalDough.water;
+    finalDough.butter = finalDough.oliveOil;
+    finalDough.sugar = round(totalFlour * (params.sugar / 100));
+    finalDough.wholeEgg = round(params.wholeEgg * WHOLE_EGG_WEIGHT);
+    finalDough.eggYolk = round(params.eggYolk * EGG_YOLK_WEIGHT);
+    
+    finalDough.water = 0;
+    finalDough.oliveOil = 0;
+  }
+
+  finalDough.total = Object.values(finalDough).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
 
   return {
     finalDough,

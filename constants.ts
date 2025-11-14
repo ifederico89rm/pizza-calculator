@@ -1,6 +1,6 @@
-import type { CalculationParams, PizzaStyle, DoughMethod, TegliaShape, TegliaThickness } from './types';
+import type { CalculationParams, DoughStyle, DoughMethod, TegliaShape, TegliaThickness } from './types';
 
-export const PIZZA_STYLES: PizzaStyle[] = ['Napoletana', 'Tonda Romana', 'Teglia Romana', 'Focaccia'];
+export const DOUGH_STYLES: DoughStyle[] = ['Napoletana', 'Tonda Romana', 'Teglia Romana', 'Focaccia', 'Bread', 'Buns'];
 export const DOUGH_METHODS: DoughMethod[] = ['Direct', 'Biga', 'Poolish'];
 
 export const TEGLIA_SHAPES: TegliaShape[] = ['square', 'round'];
@@ -14,7 +14,7 @@ export const TEGLIA_THICKNESS_MAP: { [key in TegliaThickness]: number } = {
 };
 
 export const DEFAULT_PARAMS: CalculationParams = {
-  pizzaStyle: 'Napoletana',
+  doughStyle: 'Napoletana',
   doughMethod: 'Direct',
   ballCount: 4,
   ballWeight: 250,
@@ -42,6 +42,10 @@ export const DEFAULT_PARAMS: CalculationParams = {
   focacciaLength: 40,
   focacciaWidth: 30,
   focacciaThickness: 'normal',
+
+  sugar: 0,
+  wholeEgg: 0,
+  eggYolk: 0,
 };
 
 // Mapping from poolish maturation hours to fresh yeast percentage

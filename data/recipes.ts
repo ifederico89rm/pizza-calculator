@@ -1,6 +1,6 @@
-import type { PizzaStyle, PrebuiltRecipe } from '../types';
+import type { DoughStyle, PrebuiltRecipe } from '../types';
 
-export const PREBUILT_RECIPES: Record<PizzaStyle, PrebuiltRecipe[]> = {
+export const PREBUILT_RECIPES: Record<DoughStyle, PrebuiltRecipe[]> = {
   Napoletana: [
     /*{
       name: "Classic Neapolitan",
@@ -265,5 +265,27 @@ export const PREBUILT_RECIPES: Record<PizzaStyle, PrebuiltRecipe[]> = {
         proofing: "2-3 hours in the pan at a warm temperature (~26°C).",
         baking: "220°C for 25-30 minutes until golden.",
     }*/
+  ],
+  Bread: [],
+  Buns: [
+    {
+      name: "Classic Burger Buns",
+      description: "Soft and fluffy buns, perfect for burgers or sandwiches.",
+      params: {
+        doughMethod: 'Direct',
+        hydration: 51,
+        salt: 2.7,
+        freshYeast: 2,
+        malt: 1.7,
+        oliveOil: 17, // Mapped to Butter for Buns
+        sugar: 5.3,
+        wholeEgg: 1,
+        eggYolk: 1,
+      },
+      wFlourFinalDough: "W 300-350 (Manitoba or strong flour)",
+      bulkFermentation: "1 hour at room temperature (~24-26°C), or until doubled in volume.",
+      proofing: "Shape into 100g balls. Let rise for another 1-2 hours in a warm place, until puffy and light. Brush with egg wash before baking.",
+      baking: "Bake at 190°C (375°F) for 15-20 minutes, until golden brown.",
+    }
   ],
 };

@@ -1,10 +1,10 @@
-export type PizzaStyle = 'Napoletana' | 'Tonda Romana' | 'Teglia Romana' | 'Focaccia';
+export type DoughStyle = 'Napoletana' | 'Tonda Romana' | 'Teglia Romana' | 'Focaccia' | 'Bread' | 'Buns';
 export type DoughMethod = 'Direct' | 'Biga' | 'Poolish';
 export type TegliaShape = 'square' | 'round';
 export type TegliaThickness = 'very thin' | 'thin' | 'normal' | 'thick' | 'very thick';
 
 export interface CalculationParams {
-  pizzaStyle: PizzaStyle;
+  doughStyle: DoughStyle;
   doughMethod: DoughMethod;
   ballCount: number;
   ballWeight: number;
@@ -36,6 +36,11 @@ export interface CalculationParams {
   focacciaLength: number;
   focacciaWidth: number;
   focacciaThickness: TegliaThickness;
+
+  // Buns specific
+  sugar: number;
+  wholeEgg: number;
+  eggYolk: number;
 }
 
 export interface IngredientSet {
@@ -46,6 +51,13 @@ export interface IngredientSet {
   oliveOil: number;
   malt: number;
   total?: number;
+
+  // Buns specific
+  milk?: number;
+  butter?: number;
+  sugar?: number;
+  wholeEgg?: number;
+  eggYolk?: number;
 }
 
 export interface CalculationResult {
@@ -73,6 +85,11 @@ export interface PrebuiltRecipe {
 
     poolishPercentage?: number;
     poolishHours?: number;
+
+    // Optional Buns params
+    sugar?: number;
+    wholeEgg?: number;
+    eggYolk?: number;
   };
   // Detailed instructions
   wFlourPreferment?: string;
@@ -86,6 +103,6 @@ export interface CustomRecipe {
   id: string;
   name: string;
   description: string;
-  pizzaStyle: PizzaStyle;
+  doughStyle: DoughStyle;
   params: CalculationParams;
 }

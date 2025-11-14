@@ -8,18 +8,39 @@ interface ResultsDisplayProps {
   onOpenSaveModal: () => void;
 }
 
-const IngredientTable: React.FC<{ title: string; ingredients: IngredientSet }> = ({ title, ingredients }) => (
+interface IngredientTableProps {
+  title: string;
+  ingredients: IngredientSet;
+  params: CalculationParams;
+}
+
+const IngredientTable: React.FC<IngredientTableProps> = ({ title, ingredients, params }) => (
   <div>
     <h3 className="text-2xl font-bold mb-3 text-[#D94F2B] dark:text-[#D94F2B]">{title}</h3>
     <ul className="space-y-2">
       {Object.entries(ingredients)
         .filter(([key, value]) => typeof value === 'number' && value > 0 && key !== 'name' && key !== 'total')
-        .map(([key, value], index) => (
-        <li key={key} className={`flex justify-between items-center p-3 rounded-lg ${index % 2 === 0 ? 'bg-slate-100 dark:bg-slate-800/60' : 'bg-transparent'}`}>
-          <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-          <span className="font-semibold text-lg text-gray-900 dark:text-gray-100">{(value as number).toFixed(1)}gr</span>
-        </li>
-      ))}
+        .map(([key, value], index) => {
+          const isBunsStyle = params.doughStyle === 'Buns';
+          const isWholeEgg = key === 'wholeEgg';
+          const isEggYolk = key === 'eggYolk';
+          let displayValue: string;
+
+          if (isBunsStyle && isWholeEgg) {
+            displayValue = `${params.wholeEgg}`;
+          } else if (isBunsStyle && isEggYolk) {
+            displayValue = `${params.eggYolk}`;
+          } else {
+            displayValue = `${(value as number).toFixed(1)}gr`;
+          }
+
+          return (
+            <li key={key} className={`flex justify-between items-center p-3 rounded-lg ${index % 2 === 0 ? 'bg-slate-100 dark:bg-slate-800/60' : 'bg-transparent'}`}>
+              <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+              <span className="font-semibold text-lg text-gray-900 dark:text-gray-100">{displayValue}</span>
+            </li>
+          );
+        })}
       {ingredients.total && ingredients.total > 0 && (
          <li className="flex justify-between items-center p-3 bg-slate-200 dark:bg-slate-700 rounded-lg mt-3">
           <span className="font-bold text-gray-800 dark:text-gray-200">Total</span>
@@ -59,15 +80,27 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, params,
         .join('\n');
     };
 
-    let message = `🍕 *My ${params.pizzaStyle} Pizza Recipe* 🍕\n\n`;
+    let message = `🍔 *My ${params.doughStyle} Recipe* 🍔\n\n`;
 
     message += `*Configuration:*\n`;
     message += `- Method: ${params.doughMethod}\n`;
     message += `- Balls: ${params.ballCount} x ${params.ballWeight}gr\n`;
-    message += `- Hydration: ${params.hydration}%\n`;
-    message += `- Salt: ${params.salt}%\n`;
-    if (params.oliveOil > 0) message += `- Olive Oil: ${params.oliveOil}%\n`;
-    if (params.malt > 0) message += `- Malt: ${params.malt}%\n`;
+
+    if (params.doughStyle === 'Buns') {
+      message += `- Milk: ${params.hydration}%\n`;
+      message += `- Salt: ${params.salt}%\n`;
+      if (params.oliveOil > 0) message += `- Butter: ${params.oliveOil}%\n`;
+      if (params.sugar > 0) message += `- Sugar: ${params.sugar}%\n`;
+      if (params.wholeEgg > 0) message += `- Whole Eggs: ${params.wholeEgg}\n`;
+      if (params.eggYolk > 0) message += `- Egg Yolks: ${params.eggYolk}\n`;
+      if (params.malt > 0) message += `- Syrup Malt: ${params.malt}%\n`;
+    } else {
+      message += `- Hydration: ${params.hydration}%\n`;
+      message += `- Salt: ${params.salt}%\n`;
+      if (params.oliveOil > 0) message += `- Olive Oil: ${params.oliveOil}%\n`;
+      if (params.malt > 0) message += `- Malt: ${params.malt}%\n`;
+    }
+    
     message += `\n`;
 
     if (params.doughMethod === 'Biga') {
@@ -83,10 +116,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, params,
       message += `- Maturation: ${params.poolishHours} hours\n\n`;
     }
 
-    // Fix: Used 'Teglia Romana' instead of 'Teglia' to match the PizzaStyle type.
-    if (params.pizzaStyle === 'Teglia Romana' || params.pizzaStyle === 'Focaccia') {
-      // Fix: Used 'Teglia Romana' instead of 'Teglia' to match the PizzaStyle type.
-      const isTeglia = params.pizzaStyle === 'Teglia Romana';
+    if (params.doughStyle === 'Teglia Romana' || params.doughStyle === 'Focaccia') {
+      const isTeglia = params.doughStyle === 'Teglia Romana';
       const shape = isTeglia ? params.tegliaShape : params.focacciaShape;
       const thickness = isTeglia ? params.tegliaThickness : params.focacciaThickness;
       
@@ -139,12 +170,12 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, params,
           {results.preferment && (
             <>
              <hr className="border-slate-200 dark:border-slate-700" />
-              <IngredientTable title={results.preferment.name} ingredients={results.preferment} />
+              <IngredientTable title={results.preferment.name} ingredients={results.preferment} params={params} />
             </>
           )}
 
           <hr className="border-slate-200 dark:border-slate-700" />
-          <IngredientTable title="Final Dough" ingredients={results.finalDough} />
+          <IngredientTable title="Final Dough" ingredients={results.finalDough} params={params} />
 
           <div className="mt-4 pt-6 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row gap-3">
             <button

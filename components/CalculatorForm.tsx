@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { CalculationParams, PizzaStyle, DoughMethod, PrebuiltRecipe, TegliaShape, TegliaThickness, CustomRecipe } from '../types';
+import type { CalculationParams, DoughStyle, DoughMethod, PrebuiltRecipe, TegliaShape, TegliaThickness, CustomRecipe } from '../types';
 import { Card } from './Card';
 import { SliderInput } from './SliderInput';
 import { StepSlider } from './StepSlider';
@@ -11,11 +11,11 @@ import { RecipeDetailModal } from './RecipeDetailModal';
 interface CalculatorFormProps {
   params: CalculationParams;
   onParamChange: <K extends keyof CalculationParams>(param: K, value: CalculationParams[K]) => void;
-  onStyleChange: (style: PizzaStyle) => void;
+  onDoughStyleChange: (style: DoughStyle) => void;
   onMethodChange: (method: DoughMethod) => void;
-  pizzaStyles: PizzaStyle[];
+  doughStyles: DoughStyle[];
   doughMethods: DoughMethod[];
-  recipes: Record<PizzaStyle, PrebuiltRecipe[]>;
+  recipes: Record<DoughStyle, PrebuiltRecipe[]>;
   customRecipes: CustomRecipe[];
   selectedRecipeIdentifier: string | null;
   onRecipeSelect: (recipe: PrebuiltRecipe | CustomRecipe) => void;
@@ -28,6 +28,10 @@ const icons = {
   freshYeast: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 12.5a3.5 3.5 0 117 0 3.5 3.5 0 01-7 0z" /><path fillRule="evenodd" d="M2 5a3 3 0 013-3h10a3 3 0 013 3v5a3 3 0 01-3 3H5a3 3 0 01-3-3V5zm3-1a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z" clipRule="evenodd" /></svg>,
   malt: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-700" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 6a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM3 9a1 1 0 000 2h14a1 1 0 100-2H3zM2 13a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1z" /></svg>,
   oliveOil: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-lime-600" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM4.332 10.155a5.964 5.964 0 013.522-3.522.5.5 0 01.66.66 4.964 4.964 0 00-2.936 2.936.5.5 0 01-.66-.66z" clipRule="evenodd" /></svg>,
+  butter: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor"><path d="M4 8a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V8z" /></svg>,
+  sugar: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path d="M6 2a1 1 0 00-1 1v1H4a1 1 0 000 2h1v1a1 1 0 001 1h2a1 1 0 001-1V6h1a1 1 0 100-2h-1V3a1 1 0 00-1-1H6zM4 9a1 1 0 011-1h1v1a1 1 0 01-1 1H4a1 1 0 01-1-1zm2 2a1 1 0 00-1 1v1H4a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2H7v-1a1 1 0 00-1-1zm4-2a1 1 0 011-1h1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1zm2 2a1 1 0 00-1 1v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1v-1a1 1 0 00-1-1zM9 2a1 1 0 00-1 1v1H7a1 1 0 100 2h1v1a1 1 0 102 0V6h1a1 1 0 100-2h-1V3a1 1 0 00-1-1H9z" /></svg>,
+  wholeEgg: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-200" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a5 5 0 00-5 5c0 3.866 5 11 5 11s5-7.134 5-11a5 5 0 00-5-5z" /></svg>,
+  eggYolk: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a4 4 0 100 8 4 4 0 000-8z" /><path fillRule="evenodd" d="M1.018 7.243a1 1 0 011.314-1.503l.035.029 2.406 1.925a1 1 0 01-1.22 1.598l-2.43-1.95a1 1 0 01-.105-.099zM15.227 5.77a1 1 0 011.313 1.504l-2.43 1.95a1 1 0 01-1.22-1.598l2.3-1.825.037-.031z" clipRule="evenodd" /></svg>,
 }
 
 const SectionHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -102,9 +106,9 @@ const NumberInput: React.FC<{
 export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   params,
   onParamChange,
-  onStyleChange,
+  onDoughStyleChange,
   onMethodChange,
-  pizzaStyles,
+  doughStyles,
   doughMethods,
   recipes,
   customRecipes,
@@ -117,23 +121,30 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
   const [activeRecipeTab, setActiveRecipeTab] = useState<'pre-built' | 'my-recipes'>('pre-built');
   
   const { 
-    pizzaStyle, 
+    doughStyle, 
     tegliaShape, tegliaDiameter, tegliaLength, tegliaWidth, tegliaThickness,
     focacciaShape, focacciaDiameter, focacciaLength, focacciaWidth, focacciaThickness 
   } = params;
   
-  const recipesForStyle = recipes[pizzaStyle] || [];
-  const customRecipesForStyle = customRecipes.filter(r => r.pizzaStyle === pizzaStyle);
+  const recipesForStyle = recipes[doughStyle] || [];
+  const customRecipesForStyle = customRecipes.filter(r => r.doughStyle === doughStyle);
 
-  const isTeglia = pizzaStyle === 'Teglia Romana';
-  const isFocaccia = pizzaStyle === 'Focaccia';
+  const isTeglia = doughStyle === 'Teglia Romana';
+  const isFocaccia = doughStyle === 'Focaccia';
   const showTrayControls = isTeglia || isFocaccia;
 
   useEffect(() => {
-    // When pizza style changes, collapse the recipe list and switch to pre-built
+    // When dough style changes, collapse the recipe list and switch to pre-built
     setShowAllRecipes(false);
     setActiveRecipeTab('pre-built');
-  }, [pizzaStyle]);
+  }, [doughStyle]);
+
+  // Effect to ensure poolish percentage doesn't exceed hydration
+  useEffect(() => {
+    if (params.doughMethod === 'Poolish' && params.poolishPercentage > params.hydration) {
+      onParamChange('poolishPercentage', params.hydration);
+    }
+  }, [params.hydration, params.doughMethod, params.poolishPercentage, onParamChange]);
 
   // Effect to auto-calculate ball weight for Teglia or Focaccia pizza
   useEffect(() => {
@@ -162,7 +173,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
         onParamChange('ballWeight', newWeight);
     }
   }, [
-    pizzaStyle, 
+    doughStyle, 
     tegliaShape, tegliaDiameter, tegliaLength, tegliaWidth, tegliaThickness, 
     focacciaShape, focacciaDiameter, focacciaLength, focacciaWidth, focacciaThickness,
     onParamChange
@@ -175,8 +186,8 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
       <Card>
         <div className="space-y-8">
           <div>
-            <SectionHeader>Pizza Style</SectionHeader>
-            <Tabs options={pizzaStyles} selected={params.pizzaStyle} onSelect={(opt) => onStyleChange(opt as PizzaStyle)} />
+            <SectionHeader>Dough Style</SectionHeader>
+            <Tabs options={doughStyles} selected={params.doughStyle} onSelect={(opt) => onDoughStyleChange(opt as DoughStyle)} />
           </div>
 
           {(recipesForStyle.length > 0 || customRecipesForStyle.length > 0) && (
@@ -265,7 +276,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                    <p>You haven't saved any {pizzaStyle} recipes yet.</p>
+                    <p>You haven't saved any {doughStyle} recipes yet.</p>
                     <p className="text-sm mt-1">Create a recipe and click "Save" in the results panel.</p>
                   </div>
                 )
@@ -335,13 +346,28 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
 
           <div>
             <SectionHeader>Dough Parameters</SectionHeader>
-            <div className="space-y-4">
+            {params.doughStyle === 'Buns' ? (
+              <div className="space-y-4">
+                <SliderInput icon={icons.hydration} label="Milk" value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
+                <SliderInput icon={icons.butter} label="Butter" value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={30} step={0.5} unit="%" />
+                <SliderInput icon={icons.sugar} label="Sugar" value={params.sugar} onChange={(v) => onParamChange('sugar', v)} min={0} max={30} step={0.5} unit="%" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <NumberInput label="Whole Eggs" value={params.wholeEgg} onChange={(v) => onParamChange('wholeEgg', v)} min={0} />
+                  <NumberInput label="Egg Yolks" value={params.eggYolk} onChange={(v) => onParamChange('eggYolk', v)} min={0} />
+                </div>
+                <SliderInput icon={icons.malt} label="Syrup Malt" value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={10} step={0.1} unit="%" />
+                <SliderInput icon={icons.salt} label="Salt" value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
+                <SliderInput icon={icons.freshYeast} label="Fresh Yeast" value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={10} step={0.1} unit="%" />
+              </div>
+            ) : (
+              <div className="space-y-4">
                 <SliderInput icon={icons.hydration} label="Hydration" value={params.hydration} onChange={(v) => onParamChange('hydration', v)} min={40} max={100} step={0.5} unit="%" />
                 <SliderInput icon={icons.salt} label="Salt" value={params.salt} onChange={(v) => onParamChange('salt', v)} min={0} max={5} step={0.1} unit="%" />
                 <SliderInput icon={icons.freshYeast} label="Fresh Yeast" value={params.freshYeast} onChange={(v) => onParamChange('freshYeast', v)} min={0} max={3} step={0.1} unit="%" />
                 <SliderInput icon={icons.malt} label="Malt" value={params.malt} onChange={(v) => onParamChange('malt', v)} min={0} max={5} step={0.1} unit="%" />
                 <SliderInput icon={icons.oliveOil} label="Olive Oil" value={params.oliveOil} onChange={(v) => onParamChange('oliveOil', v)} min={0} max={10} step={0.1} unit="%" />
-            </div>
+              </div>
+            )}
           </div>
 
           {params.doughMethod === 'Biga' && (
@@ -359,7 +385,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({
             <div>
               <SectionHeader>Poolish Parameters</SectionHeader>
               <div className="space-y-4">
-                  <SliderInput label="Poolish Percentage" value={params.poolishPercentage} onChange={(v) => onParamChange('poolishPercentage', v)} min={10} max={50} unit="%" />
+                  <SliderInput label="Poolish Percentage" value={params.poolishPercentage} onChange={(v) => onParamChange('poolishPercentage', v)} min={10} max={params.hydration} unit="%" />
                   <SliderInput label="Maturation Hours" value={params.poolishHours} onChange={(v) => onParamChange('poolishHours', v)} min={1} max={18} unit="h" />
               </div>
             </div>
